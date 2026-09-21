@@ -1,0 +1,29 @@
+{
+  "name": "qa-portfolio-playwright",
+  "version": "1.0.0",
+  "description": "Playwright automation framework for UI, API, and database testing of the QA Automation Portfolio application.",
+  "main": "index.js",
+  "scripts": {
+  "test": "playwright test",
+  "test:ui": "playwright test tests/ui",
+  "test:api": "playwright test tests/api",
+  "test:db": "playwright test tests/database",
+  "test:smoke": "playwright test --grep @smoke"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "qa"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.2",
+    "pg": "^8.23.0"
+  }
+}
