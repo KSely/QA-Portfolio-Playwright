@@ -87,7 +87,6 @@ QA-Portfolio-Playwright/
 ├── utils/
 │   └── databaseHelper.js
 │
-├── .env
 ├── .env.example
 ├── .gitignore
 ├── package-lock.json
