@@ -4,11 +4,11 @@
   "description": "Playwright automation framework for UI, API, and database testing of the QA Automation Portfolio application.",
   "main": "index.js",
   "scripts": {
-  "test": "playwright test",
-  "test:ui": "playwright test tests/ui",
-  "test:api": "playwright test tests/api",
-  "test:db": "playwright test tests/database",
-  "test:smoke": "playwright test --grep @smoke"
+    "test": "playwright test",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "test:db": "playwright test tests/database",
+    "test:smoke": "playwright test --grep @smoke"
   },
   "keywords": [
     "playwright",
@@ -20,7 +20,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "1.62.1"
   },
   "dependencies": {
     "dotenv": "^18.0.2",

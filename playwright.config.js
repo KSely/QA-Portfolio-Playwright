@@ -1,7 +1,6 @@
-
 require("dotenv").config(); // Load environment variables from .env.
 
-const { defineConfig } = require("@playwright/test");
+const { defineConfig, devices } = require("@playwright/test");
 
 module.exports = defineConfig({
 
@@ -27,16 +26,47 @@ module.exports = defineConfig({
 
   },
 
-  // Browser used for UI tests.
   projects: [
-    {
-      name: "chrome",
 
+    // Run UI tests in Chromium.
+    {
+      name: "chromium",
+      testMatch: /tests\/ui\/.*\.spec\.js/,
       use: {
-        // Use locally installed Google Chrome.
-        channel: "chrome"
+        ...devices["Desktop Chrome"]
       }
+    },
+
+    // Run UI tests in Firefox.
+    {
+      name: "firefox",
+      testMatch: /tests\/ui\/.*\.spec\.js/,
+      use: {
+        ...devices["Desktop Firefox"]
+      }
+    },
+
+    // Run UI tests in WebKit.
+    {
+      name: "webkit",
+      testMatch: /tests\/ui\/.*\.spec\.js/,
+      use: {
+        ...devices["Desktop Safari"]
+      }
+    },
+
+    // Run API tests once.
+    {
+      name: "api",
+      testMatch: /tests\/api\/.*\.spec\.js/
+    },
+
+    // Run database tests once.
+    {
+      name: "database",
+      testMatch: /tests\/database\/.*\.spec\.js/
     }
+
   ]
 
 });

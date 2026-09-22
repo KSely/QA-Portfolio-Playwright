@@ -2,13 +2,13 @@
 
 A QA automation framework built with JavaScript and Playwright for testing a full-stack portfolio web application.
 
-The project demonstrates practical automated testing across the UI, API, and database layers, including end-to-end validation, test data management, reporting, and CI/CD integration.
+The project demonstrates practical automated testing across the UI, API, and database layers, including cross-browser testing, end-to-end validation, test data management, reporting, and CI/CD integration.
 
 ## Tech Stack
 
 - JavaScript
 - Node.js
-- Playwright
+- Playwright 1.62.1
 - PostgreSQL / node-postgres (`pg`)
 - npm
 - Playwright HTML Report
@@ -22,6 +22,7 @@ This repository contains a Playwright automation framework created for a full-st
 The framework demonstrates several types of automated testing:
 
 - **UI Testing** — browser-based functional and navigation testing
+- **Cross-Browser Testing** — UI validation across Chromium, Firefox, and WebKit
 - **API Testing** — direct REST API validation using Playwright's `APIRequestContext`
 - **Database Testing** — PostgreSQL validation using the `pg` client
 - **End-to-End Testing** — UI-to-database validation of contact form workflows
@@ -34,14 +35,22 @@ The UI automation follows the Page Object Model (POM) design pattern. Reusable d
 
 ## Test Coverage
 
-The framework currently includes:
+The framework currently includes 29 unique automated tests across the UI, API, and database layers.
 
-| Test Layer | Tests | Coverage |
-|---|---:|---|
-| UI | 14 | Home page, navigation, project page, contact form |
-| API | 13 | Status endpoint, contact endpoint, positive and negative validation |
-| Database | 2 | PostgreSQL connection and test-data lifecycle |
-| **Total** | **29** | **Complete regression suite** |
+| Test Layer | Unique Tests | Execution | Test Executions |
+|---|---:|---|---:|
+| UI | 14 | Chromium, Firefox, and WebKit | 42 |
+| API | 13 | Executed once | 13 |
+| Database | 2 | Executed once | 2 |
+| **Total** | **29** | **Full regression suite** | **57** |
+
+The 14 UI tests run across three Playwright-managed browser engines:
+
+- Chromium
+- Firefox
+- WebKit
+
+This provides 42 cross-browser UI test executions while keeping API and database tests independent from browser-specific execution.
 
 Additional coverage includes:
 
@@ -56,7 +65,7 @@ Additional coverage includes:
 Latest local regression result:
 
 ```text
-29 passed
+57 passed
 ```
 
 ## Project Structure
@@ -114,18 +123,36 @@ Current smoke coverage:
 
 ### Full Regression Suite
 
-Runs all UI, API, and database tests.
+Runs the complete configured test suite:
+
+- 14 UI tests in Chromium
+- 14 UI tests in Firefox
+- 14 UI tests in WebKit
+- 13 API tests
+- 2 database tests
 
 ```bash
 npm test
 ```
 
+The full regression suite contains 57 test executions.
+
 ### UI Suite
 
-Runs browser-based UI tests.
+Runs the 14 UI tests across Chromium, Firefox, and WebKit.
 
 ```bash
 npm run test:ui
+```
+
+This produces 42 UI test executions.
+
+Individual browser projects can also be executed separately:
+
+```bash
+npx playwright test --project=chromium
+npx playwright test --project=firefox
+npx playwright test --project=webkit
 ```
 
 ### API Suite
@@ -136,12 +163,24 @@ Runs API tests independently.
 npm run test:api
 ```
 
+Current API suite:
+
+```text
+13 passed
+```
+
 ### Database Suite
 
-Runs PostgreSQL integration tests.
+Runs PostgreSQL integration tests independently.
 
 ```bash
 npm run test:db
+```
+
+Current database suite:
+
+```text
+2 passed
 ```
 
 ## Prerequisites
@@ -150,7 +189,6 @@ Before running the tests, make sure the following are installed and available:
 
 - Node.js
 - npm
-- Google Chrome
 - PostgreSQL
 - The portfolio web application running locally on `http://localhost:3000`
 
@@ -159,6 +197,14 @@ Install project dependencies:
 ```bash
 npm install
 ```
+
+Install the Playwright-managed browser binaries:
+
+```bash
+npx playwright install
+```
+
+The framework uses Playwright-managed Chromium, Firefox, and WebKit for cross-browser UI testing.
 
 ## Configuration
 
@@ -190,20 +236,67 @@ The application base URL is configured in `playwright.config.js`:
 baseURL: "http://localhost:3000"
 ```
 
-The framework currently uses locally installed Google Chrome:
+The framework uses separate Playwright projects for UI, API, and database testing.
+
+UI tests run across three Playwright-managed browser engines:
 
 ```javascript
 projects: [
   {
-    name: "chrome",
+    name: "chromium",
+    testMatch: /tests\/ui\/.*\.spec\.js/,
     use: {
-      channel: "chrome"
+      ...devices["Desktop Chrome"]
+    }
+  },
+  {
+    name: "firefox",
+    testMatch: /tests\/ui\/.*\.spec\.js/,
+    use: {
+      ...devices["Desktop Firefox"]
+    }
+  },
+  {
+    name: "webkit",
+    testMatch: /tests\/ui\/.*\.spec\.js/,
+    use: {
+      ...devices["Desktop Safari"]
     }
   }
 ]
 ```
 
-This project-based configuration provides a foundation for adding additional browser configurations in the future.
+API and database tests are configured as separate projects and run once rather than being repeated for every browser engine.
+
+This keeps browser-specific execution focused on the UI layer while avoiding unnecessary duplication of API and database tests.
+
+## Cross-Browser Testing
+
+The UI automation is executed against three Playwright-managed browser engines:
+
+- **Chromium**
+- **Firefox**
+- **WebKit**
+
+Each browser project executes the same 14 UI tests.
+
+```text
+Chromium    14
+Firefox     14
+WebKit      14
+──────────────
+UI Total    42
+```
+
+This configuration validates UI behavior across multiple browser engines while keeping the test architecture centralized in one framework.
+
+During cross-browser verification, a success-message locator was updated to use the element's unique ID:
+
+```javascript
+page.locator('#success-message')
+```
+
+This provided consistent visibility behavior across Chromium, Firefox, and WebKit.
 
 ## Page Object Model
 
@@ -229,7 +322,7 @@ This structure improves test readability, locator reuse, and maintainability.
 
 ## UI Testing
 
-The UI suite validates user-facing functionality through Google Chrome.
+The UI suite validates user-facing functionality across Chromium, Firefox, and WebKit.
 
 Current UI coverage includes:
 
@@ -498,14 +591,29 @@ Run it with:
 npm run test:smoke
 ```
 
-The complete regression suite contains:
+The framework contains 29 unique tests.
+
+Because the 14 UI tests are executed across three browser engines, the complete regression run contains 57 test executions:
 
 ```text
-UI          14
-API         13
-Database     2
-────────────────
-TOTAL       29
+Unique Tests
+
+UI             14
+API            13
+Database         2
+──────────────────
+TOTAL           29
+
+
+Regression Executions
+
+Chromium UI     14
+Firefox UI      14
+WebKit UI       14
+API             13
+Database         2
+──────────────────
+TOTAL           57
 ```
 
 Run the complete regression suite with:
@@ -517,7 +625,7 @@ npm test
 Latest local execution:
 
 ```text
-29 passed
+57 passed
 ```
 
 ## CI/CD
@@ -570,7 +678,7 @@ The CI verification command is:
 npx playwright test --list
 ```
 
-The current CI pipeline performs framework and test-discovery verification rather than executing the complete 29-test regression suite.
+The current CI pipeline performs framework and test-discovery verification rather than executing the complete regression suite.
 
 The full regression suite currently requires the portfolio application under test to be running on `http://localhost:3000`.
 
@@ -606,6 +714,9 @@ This project demonstrates practical experience with:
 
 - Playwright browser automation
 - JavaScript test automation
+- Cross-browser testing
+- Chromium, Firefox, and WebKit browser engines
+- Playwright project configuration
 - Page Object Model
 - UI functional testing
 - REST API testing
@@ -631,4 +742,4 @@ This project demonstrates practical experience with:
 
 This project was created as a practical QA automation portfolio demonstrating how Playwright can be used to test a full-stack application across the **UI, API, and database layers**.
 
-The framework focuses on maintainable test architecture, reusable components, realistic validation scenarios, test independence, database verification, failure diagnostics, reporting, and CI/CD integration.
+The framework focuses on maintainable test architecture, reusable components, realistic validation scenarios, cross-browser coverage, test independence, database verification, failure diagnostics, reporting, and CI/CD integration.

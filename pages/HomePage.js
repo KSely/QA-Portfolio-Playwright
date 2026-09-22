@@ -39,7 +39,7 @@ class HomePage {
     });
 
     // Success message shown after the form is submitted.
-    this.successMessage = page.getByRole('alert');
+    this.successMessage = page.locator('#success-message');
   }
 
 }
