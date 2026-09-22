@@ -1,8 +1,8 @@
 # QA Portfolio - Playwright Automation Framework
 
-A comprehensive QA automation framework built with JavaScript and Playwright for testing a full-stack portfolio web application.
+A QA automation framework built with JavaScript and Playwright for testing a full-stack portfolio web application.
 
-The project demonstrates practical automation testing across multiple layers of the application, including UI, API, and database validation.
+The project demonstrates practical automated testing across the UI, API, and database layers, including end-to-end validation, test data management, reporting, and CI/CD integration.
 
 ## Tech Stack
 
@@ -17,42 +17,41 @@ The project demonstrates practical automation testing across multiple layers of 
 
 ## Project Overview
 
-This repository contains an automated testing framework created for a full-stack QA portfolio web application.
+This repository contains a Playwright automation framework created for a full-stack QA portfolio web application.
 
-The framework demonstrates testing across multiple application layers:
+The framework demonstrates several types of automated testing:
 
-- **UI Testing** — automated browser testing using Playwright
-- **API Testing** — direct REST API validation using Playwright's APIRequestContext
+- **UI Testing** — browser-based functional and navigation testing
+- **API Testing** — direct REST API validation using Playwright's `APIRequestContext`
 - **Database Testing** — PostgreSQL validation using the `pg` client
 - **End-to-End Testing** — UI-to-database validation of contact form workflows
-- **Smoke Testing** — focused execution of critical application checks
+- **Smoke Testing** — focused validation of critical frontend and backend functionality
 - **Regression Testing** — complete UI, API, and database test execution
-- **Test Reporting** — Playwright HTML reports with execution results and failure diagnostics
+- **Test Reporting** — Playwright HTML reports, screenshots, retries, and traces
 - **CI/CD** — GitHub Actions workflow for automated framework verification
 
-The framework follows the Page Object Model (POM) design pattern and uses reusable components for page locators, database operations, environment configuration, and test execution.
+The UI automation follows the Page Object Model (POM) design pattern. Reusable database helper functions are used for database validation, test data creation, and cleanup.
 
 ## Test Coverage
 
-The automation framework currently includes:
+The framework currently includes:
 
-- **14 UI tests** covering the Home, Project, and Contact functionality
-- **13 API tests** covering application health, response headers, successful contact submission, required field validation, whitespace validation, and invalid email formats
-- **2 database tests** covering PostgreSQL connectivity and test-data lifecycle validation
-- **29 automated tests** in the complete regression suite
-- **Database validation for API and UI workflows** to verify accepted data is persisted and rejected data is not stored where applicable
-- **Automatic test data cleanup** to keep tests independent and repeatable
-- **2 critical smoke tests** covering frontend and backend availability
+| Test Layer | Tests | Coverage |
+|---|---:|---|
+| UI | 14 | Home page, navigation, project page, contact form |
+| API | 13 | Status endpoint, contact endpoint, positive and negative validation |
+| Database | 2 | PostgreSQL connection and test-data lifecycle |
+| **Total** | **29** | **Complete regression suite** |
 
-Current regression baseline:
+Additional coverage includes:
 
-```text
-UI          14
-API         13
-Database     2
-────────────────
-TOTAL       29
-```
+- Database validation for UI and API workflows
+- Positive and negative test scenarios
+- Browser-side form validation
+- API response and status-code validation
+- Data-driven negative testing
+- Test data creation and cleanup
+- 2 critical smoke tests
 
 Latest local regression result:
 
@@ -99,24 +98,61 @@ QA-Portfolio-Playwright/
 
 ## Test Suites
 
-The framework supports different test execution strategies through Playwright configuration, test directories, npm scripts, and test tags:
+The project supports separate test suites for different testing layers.
 
-- **Smoke Suite** — runs a focused set of critical frontend and backend checks tagged with `@smoke`
-- **Regression Suite** — runs the complete automated test suite
-- **UI Suite** — runs browser-based UI tests independently
-- **API Suite** — runs API tests independently without opening a browser
-- **Database Suite** — runs PostgreSQL integration tests independently
+### Smoke Suite
 
-## Running the Tests
+Runs critical frontend and backend checks tagged with `@smoke`.
 
-### Prerequisites
+```bash
+npm run test:smoke
+```
+
+Current smoke coverage:
+
+- Backend availability through `GET /api/status`
+- Frontend availability through the Home Page
+
+### Full Regression Suite
+
+Runs all UI, API, and database tests.
+
+```bash
+npm test
+```
+
+### UI Suite
+
+Runs browser-based UI tests.
+
+```bash
+npm run test:ui
+```
+
+### API Suite
+
+Runs API tests independently.
+
+```bash
+npm run test:api
+```
+
+### Database Suite
+
+Runs PostgreSQL integration tests.
+
+```bash
+npm run test:db
+```
+
+## Prerequisites
 
 Before running the tests, make sure the following are installed and available:
 
 - Node.js
 - npm
 - Google Chrome
-- PostgreSQL for database-related tests
+- PostgreSQL
 - The portfolio web application running locally on `http://localhost:3000`
 
 Install project dependencies:
@@ -125,41 +161,11 @@ Install project dependencies:
 npm install
 ```
 
-### Run the Full Regression Suite
-
-```bash
-npm test
-```
-
-### Run the Smoke Suite
-
-```bash
-npm run test:smoke
-```
-
-### Run the UI Suite
-
-```bash
-npm run test:ui
-```
-
-### Run the API Suite
-
-```bash
-npm run test:api
-```
-
-### Run the Database Suite
-
-```bash
-npm run test:db
-```
-
 ## Configuration
 
-The framework uses environment variables stored in a local `.env` file for database configuration.
+Database configuration is managed through environment variables stored in a local `.env` file.
 
-For security reasons, `.env` is excluded from version control and is not committed to the repository.
+The real `.env` file is excluded from version control.
 
 A safe configuration template is provided in:
 
@@ -167,7 +173,7 @@ A safe configuration template is provided in:
 .env.example
 ```
 
-Example configuration:
+Example:
 
 ```properties
 DB_HOST=localhost
@@ -177,9 +183,7 @@ DB_USER=postgres
 DB_PASSWORD=your_database_password
 ```
 
-Create a local `.env` file from the example and provide the appropriate local database credentials.
-
-Never commit real database credentials to version control.
+Create a local `.env` file from this template and provide the appropriate local PostgreSQL credentials.
 
 The application base URL is configured in `playwright.config.js`:
 
@@ -187,7 +191,7 @@ The application base URL is configured in `playwright.config.js`:
 baseURL: "http://localhost:3000"
 ```
 
-The framework currently uses the locally installed Google Chrome browser through a Playwright project:
+The framework currently uses locally installed Google Chrome:
 
 ```javascript
 projects: [
@@ -200,15 +204,243 @@ projects: [
 ]
 ```
 
-The project-based configuration provides a foundation for adding additional browser configurations in the future.
+This project-based configuration provides a foundation for adding additional browser configurations in the future.
+
+## Page Object Model
+
+The UI automation uses the Page Object Model to separate page-specific locators from test logic.
+
+```text
+pages/
+├── HomePage.js
+└── ProjectPage.js
+```
+
+`HomePage.js` contains reusable locators for:
+
+- Main page content
+- Project navigation
+- Contact form fields
+- Contact form submission
+- Success message validation
+
+`ProjectPage.js` contains reusable locators for the Project Details page and its main content sections.
+
+This structure improves test readability, locator reuse, and maintainability.
+
+## UI Testing
+
+The UI suite validates user-facing functionality through Google Chrome.
+
+Current UI coverage includes:
+
+- Home page availability
+- Page title and main heading validation
+- Navigation to the Featured Project section
+- Navigation to the Project Details page
+- Project page content validation
+- Contact form successful submission
+- Required Name validation
+- Invalid Email validation
+- Required Message validation
+- Success message validation
+- Database persistence after successful form submission
+- Database non-persistence after rejected form submissions
+
+The contact form negative tests use browser-side HTML5 validation and also verify database behavior.
+
+### UI-to-Database Validation
+
+The positive contact form test validates the workflow across multiple application layers:
+
+```text
+Browser UI
+    ↓
+Contact Form
+    ↓
+POST /contact
+    ↓
+Express Backend
+    ↓
+PostgreSQL
+    ↓
+Database Verification
+```
+
+The test:
+
+1. Opens the application
+2. Enters valid contact information
+3. Submits the form through the UI
+4. Verifies the success message
+5. Queries PostgreSQL directly
+6. Confirms that the submitted data was persisted
+7. Removes the generated test record during cleanup
+
+This provides end-to-end validation from the browser through the backend to the database.
+
+## API Testing
+
+Playwright's built-in `APIRequestContext` is used to test backend endpoints directly without opening a browser.
+
+### `GET /api/status`
+
+The status endpoint tests validate:
+
+- Successful HTTP response
+- HTTP status code `200`
+- Backend status value
+- Response message
+- JSON `Content-Type` response header
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "message": "QA Automation Portfolio backend is running"
+}
+```
+
+### `POST /contact`
+
+The contact endpoint tests cover:
+
+- Successful contact submission
+- HTTP response status
+- JSON response body
+- Missing required fields
+- Whitespace-only required fields
+- Invalid email formats
+- Database persistence for accepted requests
+- Database non-persistence for rejected whitespace and invalid-email requests
+
+Data-driven tests are used for multiple validation scenarios to reduce unnecessary test duplication.
+
+Invalid email scenarios include:
+
+```text
+invalidemail.com
+@example.com
+user@
+user@example
+```
+
+## Database Testing
+
+The framework connects directly to PostgreSQL using the `pg` client.
+
+Database testing includes:
+
+- PostgreSQL connectivity validation
+- Direct SQL queries
+- Controlled test data creation
+- Verification of stored contact messages
+- Verification that rejected data is not persisted where applicable
+- Test-data lifecycle validation
+- Automatic cleanup of generated records
+- Parameterized SQL queries
+
+Reusable database operations are implemented in:
+
+```text
+utils/databaseHelper.js
+```
+
+The helper provides:
+
+```text
+insertMessage()
+messageExists()
+deleteMessage()
+```
+
+### Database Connection Test
+
+A lightweight query verifies that the PostgreSQL connection is working:
+
+```sql
+SELECT 1 AS connection_test
+```
+
+### Test Data Lifecycle
+
+The database lifecycle test validates:
+
+```text
+INSERT
+  ↓
+Verify record exists
+  ↓
+DELETE
+  ↓
+Verify one record was deleted
+  ↓
+Verify record no longer exists
+```
+
+Unique test data is generated for each execution.
+
+Database connections are closed after operations, and safety cleanup is used so failed test runs do not leave unnecessary test records in PostgreSQL.
+
+## Defects Found by Automation
+
+Automated API testing identified validation defects in the contact endpoint during framework development.
+
+### Whitespace Validation
+
+Negative API tests revealed that whitespace-only values could pass required-field validation and be persisted in PostgreSQL.
+
+The backend validation was updated to reject:
+
+- Missing values
+- Empty values
+- Whitespace-only values
+
+Regression tests were then used to verify the fix and protect the behavior from future regressions.
+
+### Email Format Validation
+
+API automation also identified that incomplete email addresses such as:
+
+```text
+test@
+```
+
+were accepted because the original validation only checked whether the email contained an `@` character.
+
+The backend email validation was improved, and additional data-driven API tests were added for invalid email formats.
+
+Database assertions verify that rejected invalid-email requests are not persisted.
+
+## Test Data Management
+
+Tests that create database records use unique values based on the current timestamp.
+
+Example:
+
+```javascript
+const timestamp = Date.now();
+```
+
+This helps keep test executions independent and prevents conflicts with data created during previous runs.
+
+Tests that create data also remove it after validation.
+
+Cleanup is placed in `finally` blocks where appropriate so test data can still be removed if an assertion fails.
 
 ## Playwright Reporting
 
 The framework uses Playwright's built-in HTML reporter.
 
-The report provides:
+After running the tests, open the report with:
 
-- Test execution status
+```bash
+npx playwright show-report
+```
+
+The report provides information such as:
+
 - Passed and failed tests
 - Skipped tests
 - Flaky test identification
@@ -216,21 +448,15 @@ The report provides:
 - Individual test results
 - Failure details
 
-After running the tests, open the HTML report with:
-
-```bash
-npx playwright show-report
-```
-
 The generated `playwright-report` directory is excluded from version control.
 
 ## Failure Diagnostics
 
-The framework includes diagnostic configuration to simplify failure investigation.
+The framework includes several features to support failure investigation.
 
-### Failure Screenshots
+### Screenshots
 
-Screenshots are automatically captured when a test fails:
+A screenshot is captured when a test fails:
 
 ```javascript
 screenshot: "only-on-failure"
@@ -254,235 +480,39 @@ trace: "on-first-retry"
 
 Trace data can be used to investigate test actions, page state, network activity, timing, and failure context.
 
-## Page Object Model
+## Smoke and Regression Testing
 
-The UI automation follows the Page Object Model design pattern.
-
-Page-specific locators are separated from test logic:
-
-```text
-pages/
-├── HomePage.js
-└── ProjectPage.js
-```
-
-This approach improves:
-
-- Test maintainability
-- Locator reuse
-- Test readability
-- Separation of page structure from test logic
-
-## UI Testing
-
-The UI suite validates user-facing functionality through Google Chrome.
-
-Current UI coverage includes:
-
-- Home page availability
-- Main page content validation
-- Navigation between application sections
-- Navigation to the project details page
-- Project page content validation
-- Contact form successful submission
-- Required Name validation
-- Email format validation
-- Required Message validation
-- Success-message validation
-- Database persistence after successful submission
-- Database non-persistence after rejected form submissions
-
-The contact form negative tests validate both browser-side HTML5 constraints and database behavior.
-
-## API Testing
-
-Playwright's built-in APIRequestContext is used to test backend endpoints directly without opening a browser.
-
-### `GET /api/status`
-
-The framework validates:
-
-- Successful HTTP response
-- HTTP status code
-- Backend status value
-- Response message
-- JSON `Content-Type` response header
-
-### `POST /contact`
-
-The framework validates:
-
-- Successful contact submission
-- Required field validation
-- Missing field validation
-- Whitespace-only field validation
-- Invalid email validation
-- HTTP status codes
-- JSON response bodies
-- Database persistence for accepted requests
-- Database non-persistence for rejected whitespace and invalid-email requests
-
-Data-driven API tests are used to cover multiple validation scenarios without unnecessary test duplication.
-
-## Database Testing
-
-The framework integrates directly with PostgreSQL using the `pg` client.
-
-Database testing includes:
-
-- PostgreSQL connectivity validation
-- Direct SQL queries from automated tests
-- Verification of submitted contact messages
-- Verification that rejected data is not stored where applicable
-- Controlled test-data creation
-- Test-data lifecycle validation
-- Automatic cleanup of generated test records
-- Verification that cleanup successfully removed test data
-- Parameterized SQL queries
-
-Reusable database operations are implemented in:
-
-```text
-utils/databaseHelper.js
-```
-
-The helper provides reusable operations for:
-
-```text
-insertMessage()
-messageExists()
-deleteMessage()
-```
-
-The database lifecycle test validates:
-
-```text
-INSERT
-  ↓
-Verify record exists
-  ↓
-DELETE
-  ↓
-Verify one record was deleted
-  ↓
-Verify record no longer exists
-```
-
-Database connections are closed after operations to keep test execution controlled and repeatable.
-
-Safety cleanup is also performed when necessary so failed test executions do not leave unnecessary test data in PostgreSQL.
-
-## End-to-End Validation
-
-The contact form UI test validates the application across multiple layers:
-
-```text
-Browser UI
-    ↓
-Contact Form
-    ↓
-POST /contact
-    ↓
-Express Backend
-    ↓
-PostgreSQL
-    ↓
-Database Verification
-```
-
-The automated workflow:
-
-1. Opens the application in the browser
-2. Enters valid contact information
-3. Submits the form through the UI
-4. Verifies the success message
-5. Queries PostgreSQL directly
-6. Confirms the submitted data was persisted
-7. Removes the generated test record during cleanup
-
-This demonstrates end-to-end validation from the browser through the backend to the database.
-
-## Key Testing Scenarios
-
-The framework covers practical quality scenarios, including:
-
-- Home page availability and content validation
-- Navigation between application sections and pages
-- Project page content validation
-- Contact form submission through the UI
-- Contact form browser-side negative validation
-- Contact API positive and negative testing
-- Required field validation
-- Whitespace-only input validation
-- Email format validation using data-driven tests
-- API response header validation
-- PostgreSQL verification after successful UI and API submissions
-- Verification that rejected UI and API data is not persisted where applicable
-- Database connectivity testing
-- Database test-data lifecycle validation
-- Automatic test-data cleanup
-- Smoke testing of critical frontend and backend functionality
-- Full regression execution
-
-## Defects Found by Automation
-
-Automated API testing identified real validation defects in the contact endpoint during framework development.
-
-### Whitespace Validation
-
-Automated negative tests revealed that whitespace-only values could pass required-field validation and be persisted in PostgreSQL.
-
-The backend validation was updated to reject missing, empty, and whitespace-only values.
-
-Regression testing was then used to verify the fix and protect the behavior from future regressions.
-
-### Email Format Validation
-
-API automation also identified that incomplete email addresses such as `test@` were accepted because the original validation only checked for the presence of the `@` character.
-
-The backend email validation was improved, and additional data-driven API test cases were added for invalid email formats.
-
-Database assertions verify that rejected invalid-email requests are not persisted.
-
-## Smoke Testing
-
-Critical tests are tagged with:
+Two critical tests are currently tagged with:
 
 ```text
 @smoke
 ```
 
-The current smoke suite validates:
+The smoke suite checks:
 
-- Backend availability through `GET /api/status`
-- Frontend availability through the Home Page smoke test
+- Frontend availability
+- Backend availability
 
-Run the smoke suite with:
+Run it with:
 
 ```bash
 npm run test:smoke
 ```
 
-Current smoke suite:
+The complete regression suite contains:
 
 ```text
-2 tests
+UI          14
+API         13
+Database     2
+────────────────
+TOTAL       29
 ```
 
-## Regression Testing
-
-The complete UI, API, and database automation suite acts as the regression suite.
-
-Run the full regression suite with:
+Run the complete regression suite with:
 
 ```bash
 npm test
-```
-
-Current regression coverage:
-
-```text
-29 automated tests
 ```
 
 Latest local execution:
@@ -493,22 +523,25 @@ Latest local execution:
 
 ## CI/CD
 
-The project uses GitHub Actions for Continuous Integration.
+The project includes a GitHub Actions workflow for Continuous Integration.
 
-The CI workflow is configured to run automatically on pushes and pull requests to the `main` branch.
+The workflow runs on:
+
+- Pushes to the `main` branch
+- Pull requests targeting the `main` branch
 
 The current pipeline:
 
 1. Runs on a GitHub-hosted Ubuntu runner
 2. Starts a PostgreSQL 16 service container
 3. Sets up Node.js 22
-4. Installs project dependencies using `npm ci`
-5. Creates the CI test configuration from `.env.example`
+4. Installs dependencies using `npm ci`
+5. Creates the CI configuration from `.env.example`
 6. Initializes the required PostgreSQL database schema
-7. Loads the Playwright configuration and discovers the automated test suite
-8. Verifies that the Playwright framework can be successfully initialized in the CI environment
+7. Loads the Playwright configuration
+8. Discovers and verifies the automated test suite
 
-Current CI workflow:
+Workflow:
 
 ```text
 Push / Pull Request
@@ -540,7 +573,9 @@ npx playwright test --list
 
 The current CI pipeline performs framework and test-discovery verification rather than executing the complete 29-test regression suite.
 
-The full regression suite currently requires the portfolio application under test to be running on `http://localhost:3000`. Full remote regression execution can be added to the CI pipeline when the application under test is made available to the GitHub Actions runner.
+The full regression suite currently requires the portfolio application under test to be running on `http://localhost:3000`.
+
+Full remote regression execution can be added when the application under test is available to the GitHub Actions runner.
 
 The workflow configuration is stored in:
 
@@ -550,40 +585,42 @@ The workflow configuration is stored in:
 
 ## npm Scripts
 
-The project provides dedicated commands for different types of test execution:
+The project provides separate commands for the main test suites:
 
 ```json
-"scripts": {
-  "test": "playwright test",
-  "test:ui": "playwright test tests/ui",
-  "test:api": "playwright test tests/api",
-  "test:db": "playwright test tests/database",
-  "test:smoke": "playwright test --grep @smoke"
+{
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "test:db": "playwright test tests/database",
+    "test:smoke": "playwright test --grep @smoke"
+  }
 }
 ```
 
-This allows the complete regression suite or individual testing layers to be executed independently.
+These commands allow the full regression suite or individual testing layers to be executed independently.
 
 ## Framework Highlights
 
-This project demonstrates:
+This project demonstrates practical experience with:
 
 - Playwright browser automation
-- JavaScript-based test automation
+- JavaScript test automation
 - Page Object Model
-- Direct REST API testing
-- HTTP response header validation
+- UI functional testing
+- REST API testing
+- Positive and negative testing
+- Data-driven test design
 - PostgreSQL database integration
 - UI-to-database end-to-end validation
-- Positive and negative UI testing
-- Positive and negative API testing
-- Data-driven test design
-- Database test-data lifecycle management
+- HTTP status and response validation
+- Database persistence validation
+- Parameterized SQL queries
+- Test data lifecycle management
+- Automatic test data cleanup
 - Smoke and regression testing
 - Environment-based configuration
-- Secure configuration template using `.env.example`
-- Parameterized SQL queries
-- Automatic test data cleanup
 - Playwright HTML reporting
 - Failure screenshots
 - Retry and trace diagnostics
@@ -595,4 +632,4 @@ This project demonstrates:
 
 This project was created as a practical QA automation portfolio demonstrating how Playwright can be used to test a full-stack application across the **UI, API, and database layers**.
 
-The framework focuses on maintainable test architecture, reusable components, realistic validation scenarios, test independence, database verification, failure diagnostics, clear reporting, and CI/CD integration.
+The framework focuses on maintainable test architecture, reusable components, realistic validation scenarios, test independence, database verification, failure diagnostics, reporting, and CI/CD integration.

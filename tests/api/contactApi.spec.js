@@ -1,16 +1,5 @@
-// Import Playwright's test function and assertion library.
-//
-// The built-in "request" fixture allows us to send HTTP
-// requests directly to the backend without using a browser.
 const { test, expect } = require("@playwright/test");
 
-// Import reusable database helper functions.
-//
-// messageExists() verifies whether submitted data exists
-// in PostgreSQL.
-//
-// deleteMessage() removes test data after a successful
-// positive API test.
 const {
   messageExists,
   deleteMessage
@@ -19,27 +8,22 @@ const {
 
 // ============================================================
 // POST /contact
-// Positive API Test
 // ============================================================
-//
-// Verify that the Contact API accepts valid form data,
-// returns the expected response, and stores the submitted
-// message in PostgreSQL.
+
+// Verify successful submission and database persistence.
 test("POST /contact should create a message with valid data", async ({
   request,
 }) => {
 
-  // Generate unique test data for every execution.
+  // Use unique data for each test run.
   const timestamp = Date.now();
 
   const testName = "Playwright API Test User";
   const testEmail = `playwright.api.${timestamp}@example.com`;
   const testMessage = `Playwright API contact test ${timestamp}`;
 
-
   try {
 
-    // Step 1: Send valid form data to POST /contact.
     const response = await request.post("/contact", {
       form: {
         name: testName,
@@ -48,25 +32,16 @@ test("POST /contact should create a message with valid data", async ({
       }
     });
 
-
-    // Step 2: Verify HTTP 200 OK.
     expect(response.status()).toBe(200);
 
-
-    // Step 3: Parse the JSON response.
     const responseBody = await response.json();
 
-
-    // Step 4: Verify the API response.
     expect(responseBody.success).toBe(true);
-
     expect(responseBody.message).toBe(
       "Message sent successfully!"
     );
 
-
-    // Step 5: Verify that the submitted data
-    // was persisted in PostgreSQL.
+    // Verify that the message was saved in the database.
     const isMessageStored = await messageExists(
       testEmail,
       testMessage
@@ -76,7 +51,7 @@ test("POST /contact should create a message with valid data", async ({
 
   } finally {
 
-    // Remove test data even if an assertion fails.
+    // Remove test data even if the test fails.
     await deleteMessage(
       testEmail,
       testMessage
@@ -88,14 +63,10 @@ test("POST /contact should create a message with valid data", async ({
 
 
 // ============================================================
-// POST /contact
-// Negative API Tests - Missing Required Fields
+// Missing Required Fields
 // ============================================================
-//
-// Instead of creating three separate tests containing almost
-// identical logic, we define the test data once.
-//
-// Each object represents one negative validation scenario.
+
+// Test data for missing required fields.
 const missingFieldTestCases = [
 
   {
@@ -124,34 +95,21 @@ const missingFieldTestCases = [
 
 ];
 
-
-// Generate one Playwright test for every test case.
-//
-// This is data-driven testing:
-// one test implementation executes against multiple
-// sets of input data.
+// Run the same validation test for each missing field.
 for (const testCase of missingFieldTestCases) {
 
   test(`POST /contact should reject request when ${testCase.field} is missing`,
     async ({ request }) => {
 
-      // Step 1: Send a request with one required field missing.
       const response = await request.post("/contact", {
         form: testCase.formData
       });
 
-
-      // Step 2: Verify HTTP 400 Bad Request.
       expect(response.status()).toBe(400);
 
-
-      // Step 3: Parse the JSON response.
       const responseBody = await response.json();
 
-
-      // Step 4: Verify the validation response.
       expect(responseBody.success).toBe(false);
-
       expect(responseBody.message).toBe(
         "All fields are required."
       );
@@ -161,17 +119,12 @@ for (const testCase of missingFieldTestCases) {
 
 }
 
+
 // ============================================================
-// POST /contact
-// Negative API Test Data - Whitespace Required Fields
+// Whitespace Required Fields
 // ============================================================
-//
-// These test cases verify that required fields containing
-// only whitespace are treated as empty values.
-//
-// This is an important boundary condition because the field
-// technically exists in the request, but does not contain
-// meaningful user input.
+
+// Test data for fields containing only spaces.
 const whitespaceFieldTestCases = [
 
   {
@@ -203,56 +156,31 @@ const whitespaceFieldTestCases = [
 
 ];
 
-// ============================================================
-// POST /contact
-// Negative API Tests - Whitespace Required Fields
-// ============================================================
-//
-// Generate one Playwright test for every whitespace test case.
-//
-// These tests verify that values containing only spaces
-// are rejected by backend validation.
+// Run the same validation test for each whitespace field.
 for (const testCase of whitespaceFieldTestCases) {
 
   test(`POST /contact should reject request when ${testCase.field} contains only whitespace`,
     async ({ request }) => {
 
-      // Step 1: Send a request where one required field
-      // contains only whitespace characters.
       const response = await request.post("/contact", {
         form: testCase.formData
       });
 
-
-      // Step 2: Verify HTTP 400 Bad Request.
       expect(response.status()).toBe(400);
 
-
-      // Step 3: Parse the JSON response.
       const responseBody = await response.json();
 
-
-      // Step 4: Verify the validation response.
       expect(responseBody.success).toBe(false);
-
       expect(responseBody.message).toBe(
         "All fields are required."
       );
 
-
-      // Step 5: Verify that rejected data was NOT
-      // persisted in PostgreSQL.
-      //
-      // messageExists() searches using the email and message
-      // supplied by the current test case.
+      // Verify that rejected data was not saved.
       const isMessageStored = await messageExists(
         testCase.formData.email,
         testCase.formData.message
       );
 
-
-      // Step 6: Rejected requests must not create
-      // records in the database.
       expect(isMessageStored).toBe(false);
 
     }
@@ -260,16 +188,12 @@ for (const testCase of whitespaceFieldTestCases) {
 
 }
 
+
 // ============================================================
-// POST /contact
-// Negative API Test Data - Invalid Email Formats
+// Invalid Email Formats
 // ============================================================
-//
-// These test cases verify that the backend rejects
-// malformed email addresses.
-//
-// Each case represents a different email validation
-// boundary condition.
+
+// Test data for invalid email formats.
 const invalidEmailTestCases = [
 
   {
@@ -294,33 +218,19 @@ const invalidEmailTestCases = [
 
 ];
 
-// ============================================================
-// POST /contact
-// Negative API Tests - Invalid Email Formats
-// ============================================================
-//
-// Generate one Playwright test for every invalid email case.
-//
-// These tests verify that malformed email addresses
-// are rejected by backend validation and are not
-// persisted in PostgreSQL.
+// Run the same validation test for each invalid email.
 for (const testCase of invalidEmailTestCases) {
 
   test(`POST /contact should reject email with ${testCase.description}`,
     async ({ request }) => {
 
-      // Generate a unique message for this test execution.
-      //
-      // This allows us to verify that this exact rejected
-      // request was not persisted in PostgreSQL.
+      // Use a unique message for each test run.
       const timestamp = Date.now();
 
       const testName = "Playwright API Test User";
       const testMessage =
         `Invalid email API test ${testCase.description} ${timestamp}`;
 
-
-      // Step 1: Send the request with an invalid email address.
       const response = await request.post("/contact", {
         form: {
           name: testName,
@@ -329,33 +239,21 @@ for (const testCase of invalidEmailTestCases) {
         }
       });
 
-
-      // Step 2: Verify HTTP 400 Bad Request.
       expect(response.status()).toBe(400);
 
-
-      // Step 3: Parse the JSON response.
       const responseBody = await response.json();
 
-
-      // Step 4: Verify the validation response.
       expect(responseBody.success).toBe(false);
-
       expect(responseBody.message).toBe(
         "Invalid email address."
       );
 
-
-      // Step 5: Verify that the rejected request
-      // was NOT persisted in PostgreSQL.
+      // Verify that rejected data was not saved.
       const isMessageStored = await messageExists(
         testCase.email,
         testMessage
       );
 
-
-      // Step 6: Invalid data must not create
-      // a database record.
       expect(isMessageStored).toBe(false);
 
     }
