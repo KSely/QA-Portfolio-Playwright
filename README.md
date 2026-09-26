@@ -630,23 +630,32 @@ Latest local execution:
 
 ## CI/CD
 
-The project includes a GitHub Actions workflow for Continuous Integration.
+The project includes a GitHub Actions workflow for automated Continuous Integration.
 
 The workflow runs on:
 
 - Pushes to the `main` branch
 - Pull requests targeting the `main` branch
 
-The current pipeline:
+The CI pipeline:
 
 1. Runs on a GitHub-hosted Ubuntu runner
 2. Starts a PostgreSQL 16 service container
-3. Sets up Node.js 22
-4. Installs dependencies using `npm ci`
-5. Creates the CI configuration from `.env.example`
-6. Initializes the required PostgreSQL database schema
-7. Loads the Playwright configuration
-8. Discovers and verifies the automated test suite
+3. Checks out the Playwright automation repository
+4. Checks out the portfolio application under test
+5. Sets up Node.js 22
+6. Installs the Playwright project dependencies using `npm ci`
+7. Installs the application dependencies using `npm ci`
+8. Creates the test and application environment configurations
+9. Initializes the required PostgreSQL database schema
+10. Starts the portfolio application under test
+11. Verifies application availability through `GET /api/status`
+12. Installs the Playwright-managed browser binaries and required system dependencies
+13. Runs the API test suite
+14. Runs the database test suite
+15. Runs the smoke test suite
+16. Runs the cross-browser UI test suite across Chromium, Firefox, and WebKit
+17. Uploads the Playwright HTML report as a GitHub Actions artifact if the workflow fails
 
 Workflow:
 
@@ -659,30 +668,47 @@ Ubuntu Runner
         ↓
 PostgreSQL 16
         ↓
+Checkout Playwright Framework
+        ↓
+Checkout Application Under Test
+        ↓
 Node.js 22
         ↓
-npm ci
+Install Dependencies
         ↓
-Test Configuration
+Environment Configuration
         ↓
 Database Schema
         ↓
-Playwright Test Discovery
+Start Application
         ↓
-Framework Verification
+Application Health Check
+        ↓
+Install Playwright Browsers
+        ↓
+API Tests
+        ↓
+Database Tests
+        ↓
+Smoke Tests
+        ↓
+Cross-Browser UI Tests
+        ↓
+CI Result
 ```
 
-The CI verification command is:
+The automated CI test stages use:
 
 ```bash
-npx playwright test --list
+npm run test:api
+npm run test:db
+npm run test:smoke
+npm run test:ui
 ```
+The UI suite executes 14 tests across Chromium, Firefox, and WebKit, producing 42 cross-browser UI test executions.
 
-The current CI pipeline performs framework and test-discovery verification rather than executing the complete regression suite.
+If a test stage fails, the generated Playwright HTML report is uploaded as a GitHub Actions artifact for failure investigation.
 
-The full regression suite currently requires the portfolio application under test to be running on `http://localhost:3000`.
-
-Full remote regression execution can be added when the application under test is available to the GitHub Actions runner.
 
 The workflow configuration is stored in:
 
