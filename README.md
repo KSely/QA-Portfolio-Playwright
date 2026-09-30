@@ -926,11 +926,11 @@ The workflow configuration is stored in:
 
 ### Latest Regression CI Verification
 
-After the DEF-001 and DEF-002 regression tests were added, the first CI execution encountered failures because the Playwright repository was pushed before the corresponding updated AUT version was available remotely.
+After the DEF-001 and DEF-002 regression tests and corresponding application fixes were published, the Playwright CI workflow completed successfully.
 
-After the application fixes were published and the workflow was rerun, the Playwright CI workflow completed successfully.
+The GitHub Actions pipeline verified the updated regression coverage against the current Application Under Test across the configured CI test stages.
 
-This verifies that the new DEF-001 and DEF-002 regression coverage executes successfully against the updated Application Under Test in the GitHub Actions environment.
+This provides independent CI verification that the DEF-001 and DEF-002 regression tests execute successfully against the corrected application.
 
 ---
 
