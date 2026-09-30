@@ -50,6 +50,52 @@ test("contact form should submit successfully with valid data", async ({
 });
 
 
+// DEF-002: Recover after a browser-valid submission is rejected by the server.
+test("contact form should recover after server-side validation rejection", async ({ page }) => {
+  const homePage = new HomePage(page);
+  // Use a stable selector because the button's accessible name changes while sending.
+  const sendButton = page.locator("#send-message-button");
+  const timestamp = Date.now();
+  const testEmail = `playwright.recovery.${timestamp}@example.com`;
+  const testMessage = `Playwright rejection recovery test ${timestamp}`;
+
+  try {
+    await page.goto("/");
+    await homePage.nameInput.fill("   ");
+    await homePage.emailInput.fill(testEmail);
+    await homePage.messageInput.fill(testMessage);
+
+    expect(await page.locator("#contact-form").evaluate(form => form.checkValidity())).toBe(true);
+
+    const responsePromise = page.waitForResponse(response =>
+      new URL(response.url()).pathname === "/contact" &&
+      response.request().method() === "POST"
+    );
+    await sendButton.click();
+    const response = await responsePromise;
+    const body = await response.json();
+    console.log("DEF-002 rejection:", response.status(), JSON.stringify(body));
+    expect(response.status()).toBe(400);
+    expect(body).toEqual({ success: false, message: "All fields are required." });
+
+    const isMessageStored = await messageExists(testEmail, testMessage);
+    console.log("DEF-002 matching database row exists:", isMessageStored);
+    expect(isMessageStored).toBe(false);
+
+    await expect.soft(sendButton).toBeEnabled();
+    await expect.soft(sendButton).toHaveText("Send Message");
+    await expect.soft(sendButton).not.toHaveText("Sending...");
+  } finally {
+    // Remove only this test's data if an unexpected write occurred.
+    if (await messageExists(testEmail, testMessage)) {
+      console.log("DEF-002 cleanup deleted rows:", await deleteMessage(testEmail, testMessage));
+    } else {
+      console.log("DEF-002 cleanup not needed: no matching database row.");
+    }
+  }
+});
+
+
 // Verify browser validation when Name is empty.
 test("contact form should not submit when name is empty", async ({ page }) => {
 
