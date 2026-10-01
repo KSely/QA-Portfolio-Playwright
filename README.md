@@ -205,7 +205,7 @@ npx playwright test --project=webkit
 Runs five system/UI accessibility tests once in Chromium:
 
 - Full-page axe scans for `/`, `/project`, and `/project/automation`
-- Main-navigation keyboard focus and activation
+- Main-navigation link focus and Enter activation
 - Contact-form accessible names, required semantics, and keyboard focus order
 
 ```bash
