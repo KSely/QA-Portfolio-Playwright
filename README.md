@@ -15,6 +15,7 @@ The Application Under Test (AUT) is maintained in a separate repository:
 - JavaScript
 - Node.js
 - Playwright 1.62.1
+- `@axe-core/playwright` 4.13.0
 - PostgreSQL / node-postgres (`pg`)
 - npm
 - Playwright HTML Report
@@ -30,6 +31,7 @@ This repository contains a Playwright automation framework created for a full-st
 The framework demonstrates several types of automated testing:
 
 - **UI Testing** — browser-based functional and navigation testing
+- **Accessibility Testing** — WCAG-oriented axe scans and focused keyboard/semantic checks in Chromium
 - **Cross-Browser Testing** — UI validation across Chromium, Firefox, and WebKit
 - **API Testing** — direct REST API validation using Playwright's `APIRequestContext`
 - **Database Testing** — PostgreSQL validation using the `pg` client
@@ -48,14 +50,15 @@ Reusable database helper functions are used for database validation, test data c
 
 ## Test Coverage
 
-The framework currently includes **32 unique automated tests** across the UI, API, and database layers.
+The framework currently includes **37 unique automated tests** across the UI, accessibility, API, and database layers.
 
 | **Test Layer** | **Unique Tests** | **Execution** | **Configured Test Executions** |
 |---|---:|---|---:|
 | UI | 17 | Chromium, Firefox, and WebKit | 51 |
+| Accessibility | 5 | Chromium | 5 |
 | API | 13 | Executed once | 13 |
 | Database | 2 | Executed once | 2 |
-| **Total** | **32** | **Full configured suite** | **66** |
+| **Total** | **37** | **Full configured suite** | **71** |
 
 The 17 UI tests are configured to run across three Playwright-managed browser engines:
 
@@ -67,7 +70,7 @@ This provides **51 configured cross-browser UI executions** while keeping API an
 
 The full configured Playwright suite contains:
 
-**17 UI × 3 browsers + 13 API + 2 database = 66 configured executions before retries.**
+**17 UI × 3 browsers + 5 accessibility + 13 API + 2 database = 71 configured executions before retries.**
 
 The configured execution count represents framework configuration and should not be confused with the scope of an individual verification cycle.
 
@@ -110,6 +113,9 @@ QA-Portfolio-Playwright/
 │   └── ProjectPage.js
 │
 ├── tests/
+│   ├── accessibility/
+│   │   └── accessibility.spec.js
+│   │
 │   ├── api/
 │   │   ├── contactApi.spec.js
 │   │   └── statusApi.spec.js
@@ -162,6 +168,7 @@ Runs the complete configured Playwright suite:
 - 17 UI tests in Chromium
 - 17 UI tests in Firefox
 - 17 UI tests in WebKit
+- 5 accessibility tests in Chromium
 - 13 API tests
 - 2 database tests
 
@@ -169,7 +176,7 @@ Runs the complete configured Playwright suite:
 npm test
 ```
 
-The configured full regression suite contains **66 test executions before retries**.
+The configured full regression suite contains **71 test executions before retries**.
 
 ---
 
@@ -190,6 +197,24 @@ npx playwright test --project=chromium
 npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
+
+---
+
+### Accessibility Suite
+
+Runs five system/UI accessibility tests once in Chromium:
+
+- Full-page axe scans for `/`, `/project`, and `/project/automation`
+- Main-navigation keyboard focus and activation
+- Contact-form accessible names, required semantics, and keyboard focus order
+
+```bash
+npm run test:accessibility
+```
+
+The axe scans use the supported WCAG A/AA tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, and `wcag22aa`. Genuine violations fail the tests and include the axe rule ID, impact, help text, and affected selectors in the failure output.
+
+Automated scans detect only some accessibility issues. They do not prove full WCAG compliance or replace manual testing for keyboard-only use, logical tab order, visible focus, zoom and reflow, screen-reader behavior, meaningful reading order, or validation feedback usability.
 
 ---
 
@@ -280,7 +305,7 @@ The application base URL is configured in `playwright.config.js`:
 baseURL: "http://localhost:3000"
 ```
 
-The framework uses separate Playwright projects for UI, API, and database testing.
+The framework uses separate Playwright projects for UI, accessibility, API, and database testing.
 
 UI tests run across three Playwright-managed browser engines:
 
@@ -306,13 +331,20 @@ projects: [
     use: {
       ...devices["Desktop Safari"]
     }
+  },
+  {
+    name: "accessibility",
+    testMatch: /tests\/accessibility\/.*\.spec\.js/,
+    use: {
+      ...devices["Desktop Chrome"]
+    }
   }
 ]
 ```
 
-API and database tests are configured as separate projects and run once rather than being repeated for every browser engine.
+Accessibility, API, and database tests are configured as separate projects and run once rather than being repeated for every browser engine.
 
-This keeps browser-specific execution focused on the UI layer while avoiding unnecessary duplication of API and database tests.
+This keeps cross-browser execution focused on functional UI coverage while avoiding unnecessary duplication of accessibility, API, and database tests.
 
 ---
 
@@ -789,18 +821,19 @@ Run it with:
 npm run test:smoke
 ```
 
-The framework contains **32 unique tests**.
+The framework contains **37 unique tests**.
 
-Because the 17 UI tests are configured across three browser engines, the complete configured Playwright run contains **66 executions before retries**.
+Because the 17 UI tests are configured across three browser engines and the 5 accessibility tests run once in Chromium, the complete configured Playwright run contains **71 executions before retries**.
 
 ```text
 Unique Tests
 
 UI             17
+Accessibility   5
 API            13
 Database        2
 ──────────────────
-TOTAL          32
+TOTAL          37
 
 
 Configured Executions
@@ -808,10 +841,11 @@ Configured Executions
 Chromium UI    17
 Firefox UI     17
 WebKit UI      17
+Accessibility   5
 API            13
 Database        2
 ──────────────────
-TOTAL          66
+TOTAL          71
 ```
 
 Run the complete configured suite with:
@@ -858,8 +892,9 @@ The CI pipeline:
 13. Runs the API test suite
 14. Runs the database test suite
 15. Runs the smoke test suite
-16. Runs the cross-browser UI test suite across Chromium, Firefox, and WebKit
-17. Uploads the Playwright HTML report as a GitHub Actions artifact if the workflow fails
+16. Runs the Chromium accessibility test suite
+17. Runs the cross-browser UI test suite across Chromium, Firefox, and WebKit
+18. Uploads the Playwright HTML report as a GitHub Actions artifact if the workflow fails
 
 Workflow:
 
@@ -896,6 +931,8 @@ Database Tests
         ↓
 Smoke Tests
         ↓
+Accessibility Tests
+        ↓
 Cross-Browser UI Tests
         ↓
 CI Result
@@ -907,6 +944,7 @@ The automated CI test stages use:
 npm run test:api
 npm run test:db
 npm run test:smoke
+npm run test:accessibility
 npm run test:ui
 ```
 
@@ -943,6 +981,7 @@ The project provides separate commands for the main test suites:
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test tests/ui",
+    "test:accessibility": "playwright test --project=accessibility",
     "test:api": "playwright test tests/api",
     "test:db": "playwright test tests/database",
     "test:smoke": "playwright test --grep @smoke"
@@ -965,6 +1004,8 @@ This project demonstrates practical experience with:
 - Playwright project configuration
 - Page Object Model
 - UI functional testing
+- WCAG-oriented axe accessibility scanning
+- Keyboard and form-semantics accessibility checks
 - REST API testing
 - Positive and negative testing
 - Data-driven test design

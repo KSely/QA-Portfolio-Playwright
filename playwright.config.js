@@ -55,6 +55,15 @@ module.exports = defineConfig({
       }
     },
 
+    // Run accessibility tests once in Chromium.
+    {
+      name: "accessibility",
+      testMatch: /tests\/accessibility\/.*\.spec\.js/,
+      use: {
+        ...devices["Desktop Chrome"]
+      }
+    },
+
     // Run API tests once.
     {
       name: "api",

@@ -104,6 +104,9 @@ jobs:
       - name: Run smoke tests
         run: npm run test:smoke
 
+      - name: Run accessibility tests
+        run: npm run test:accessibility
+
       - name: Run UI tests
         run: npm run test:ui
 
