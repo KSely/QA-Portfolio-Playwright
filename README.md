@@ -16,6 +16,7 @@ The Application Under Test (AUT) is maintained in a separate repository:
 - Node.js
 - Playwright 1.62.1
 - `@axe-core/playwright` 4.13.0
+- Ajv 8.20.0
 - PostgreSQL / node-postgres (`pg`)
 - npm
 - Playwright HTML Report
@@ -80,6 +81,7 @@ Additional coverage includes:
 - Positive and negative test scenarios
 - Browser-side form validation
 - API response and status-code validation
+- JSON Schema-based API contract validation
 - Data-driven negative testing
 - Test data creation and cleanup
 - JavaScript page-error detection
@@ -123,6 +125,10 @@ QA-Portfolio-Playwright/
 │   ├── database/
 │   │   └── databaseConnection.spec.js
 │   │
+│   ├── schemas/
+│   │   ├── contact-response.schema.json
+│   │   └── status-response.schema.json
+│   │
 │   └── ui/
 │       ├── contact.spec.js
 │       ├── home.spec.js
@@ -130,7 +136,8 @@ QA-Portfolio-Playwright/
 │       └── project.spec.js
 │
 ├── utils/
-│   └── databaseHelper.js
+│   ├── databaseHelper.js
+│   └── schemaValidator.js
 │
 ├── .env.example
 ├── .gitignore
@@ -462,7 +469,16 @@ This provides end-to-end validation from the browser through the backend to the 
 
 ## API Testing
 
-Playwright's built-in `APIRequestContext` is used to test backend endpoints directly without opening a browser.
+Playwright's built-in `APIRequestContext` is used to test backend endpoints directly without opening a browser. Ajv provides JSON Schema Validation for API contract validation alongside the existing functional assertions.
+
+The API tests validate:
+
+- HTTP status codes
+- Exact response values and messages
+- Database persistence or non-persistence where applicable
+- JSON response structure
+- Required properties
+- Property data types
 
 ### `GET /api/status`
 
@@ -506,6 +522,31 @@ invalidemail.com
 user@
 user@example
 ```
+
+### JSON Schema Validation
+
+Playwright performs each API request, and `response.json()` converts the response body into a JavaScript object. Ajv validates that object against the appropriate JSON Schema, and Playwright `expect()` asserts that validation passed. Schema validation adds response-structure and data-type checks; normal Playwright assertions continue to verify exact business values and messages.
+
+The implemented schemas are:
+
+- `tests/schemas/status-response.schema.json`
+  - Validates a root object with required `status` and `message` properties.
+  - Requires both properties to be strings.
+- `tests/schemas/contact-response.schema.json`
+  - Validates a root object with required `success` and `message` properties.
+  - Requires `success` to be a boolean and `message` to be a string.
+
+The reusable `utils/schemaValidator.js` helper compiles each Ajv schema once and returns the validation status with detailed Ajv errors. When a response does not match its schema, the Playwright assertion includes useful missing-property or incorrect-type diagnostics.
+
+Schema validation currently covers these existing API scenarios:
+
+- Successful `GET /api/status`
+- Successful `POST /contact`
+- Missing required-field rejections
+- Whitespace-only required-field rejections
+- Invalid-email rejections
+
+No schema-only tests were added. The existing API suite remains at **13 tests**.
 
 ---
 
@@ -889,7 +930,7 @@ The CI pipeline:
 10. Starts the portfolio application under test
 11. Verifies application availability through `GET /api/status`
 12. Installs the Playwright-managed browser binaries and required system dependencies
-13. Runs the API test suite
+13. Runs the API test suite, including Ajv JSON Schema validation
 14. Runs the database test suite
 15. Runs the smoke test suite
 16. Runs the Chromium accessibility test suite
@@ -947,6 +988,10 @@ npm run test:smoke
 npm run test:accessibility
 npm run test:ui
 ```
+
+JSON Schema validation runs automatically within the existing `npm run test:api` stage. No separate schema-validation workflow or test stage is required.
+
+The existing GitHub Actions workflow completed successfully with the Ajv schema assertions included in that API stage.
 
 The UI suite contains 17 UI cases configured across Chromium, Firefox, and WebKit, producing **51 configured cross-browser UI executions before retries**.
 
@@ -1007,6 +1052,8 @@ This project demonstrates practical experience with:
 - WCAG-oriented axe accessibility scanning
 - Keyboard and form-semantics accessibility checks
 - REST API testing
+- JSON Schema Validation with Ajv
+- JSON Schema-based API contract validation
 - Positive and negative testing
 - Data-driven test design
 - PostgreSQL database integration
