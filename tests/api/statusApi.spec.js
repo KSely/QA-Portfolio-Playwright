@@ -1,4 +1,10 @@
 const { test, expect } = require("@playwright/test");
+const statusResponseSchema = require("../schemas/status-response.schema.json");
+const {
+  createSchemaValidator,
+} = require("../../utils/schemaValidator");
+
+const validateStatusResponse = createSchemaValidator(statusResponseSchema);
 
 // ============================================================
 // GET /api/status
@@ -20,6 +26,13 @@ test("GET /api/status should return backend status @smoke", async ({
   expect(responseBody.message).toBe(
     "QA Automation Portfolio backend is running",
   );
+
+  const schemaResult = validateStatusResponse(responseBody);
+
+  expect(
+    schemaResult.valid,
+    JSON.stringify(schemaResult.errors, null, 2),
+  ).toBe(true);
 });
 
 

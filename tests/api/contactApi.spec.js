@@ -1,9 +1,15 @@
 const { test, expect } = require("@playwright/test");
+const contactResponseSchema = require("../schemas/contact-response.schema.json");
 
 const {
   messageExists,
   deleteMessage
 } = require("../../utils/databaseHelper");
+const {
+  createSchemaValidator,
+} = require("../../utils/schemaValidator");
+
+const validateContactResponse = createSchemaValidator(contactResponseSchema);
 
 
 // ============================================================
@@ -40,6 +46,13 @@ test("POST /contact should create a message with valid data", async ({
     expect(responseBody.message).toBe(
       "Message sent successfully!"
     );
+
+    const schemaResult = validateContactResponse(responseBody);
+
+    expect(
+      schemaResult.valid,
+      JSON.stringify(schemaResult.errors, null, 2),
+    ).toBe(true);
 
     // Verify that the message was saved in the database.
     const isMessageStored = await messageExists(
@@ -114,6 +127,13 @@ for (const testCase of missingFieldTestCases) {
         "All fields are required."
       );
 
+      const schemaResult = validateContactResponse(responseBody);
+
+      expect(
+        schemaResult.valid,
+        JSON.stringify(schemaResult.errors, null, 2),
+      ).toBe(true);
+
     }
   );
 
@@ -174,6 +194,13 @@ for (const testCase of whitespaceFieldTestCases) {
       expect(responseBody.message).toBe(
         "All fields are required."
       );
+
+      const schemaResult = validateContactResponse(responseBody);
+
+      expect(
+        schemaResult.valid,
+        JSON.stringify(schemaResult.errors, null, 2),
+      ).toBe(true);
 
       // Verify that rejected data was not saved.
       const isMessageStored = await messageExists(
@@ -247,6 +274,13 @@ for (const testCase of invalidEmailTestCases) {
       expect(responseBody.message).toBe(
         "Invalid email address."
       );
+
+      const schemaResult = validateContactResponse(responseBody);
+
+      expect(
+        schemaResult.valid,
+        JSON.stringify(schemaResult.errors, null, 2),
+      ).toBe(true);
 
       // Verify that rejected data was not saved.
       const isMessageStored = await messageExists(
