@@ -1,8 +1,8 @@
-const { test, expect } = require("@playwright/test");
-const AxeBuilder = require("@axe-core/playwright").default;
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
-const HomePage = require("../../pages/HomePage");
-const ProjectPage = require("../../pages/ProjectPage");
+import HomePage from "../../pages/HomePage.js";
+import ProjectPage from "../../pages/ProjectPage.js";
 
 const WCAG_A_AA_TAGS = [
   "wcag2a",

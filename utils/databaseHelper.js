@@ -1,6 +1,8 @@
 // Reusable PostgreSQL helper functions for database tests.
 
-const { Client } = require("pg");
+import pg from "pg";
+
+const { Client } = pg;
 
 
 // ============================================================
@@ -24,7 +26,7 @@ function createClient() {
 // ============================================================
 
 // Check if a contact message exists in the database.
-async function messageExists(email, message) {
+export async function messageExists(email, message) {
   const client = createClient();
 
   try {
@@ -55,7 +57,7 @@ async function messageExists(email, message) {
 // ============================================================
 
 // Insert a message and return its database ID.
-async function insertMessage(name, email, message) {
+export async function insertMessage(name, email, message) {
   const client = createClient();
 
   try {
@@ -84,7 +86,7 @@ async function insertMessage(name, email, message) {
 // ============================================================
 
 // Delete a message and return the number of deleted rows.
-async function deleteMessage(email, message) {
+export async function deleteMessage(email, message) {
   const client = createClient();
 
   try {
@@ -106,10 +108,3 @@ async function deleteMessage(email, message) {
     await client.end();
   }
 }
-
-
-module.exports = {
-  insertMessage,
-  messageExists,
-  deleteMessage
-};

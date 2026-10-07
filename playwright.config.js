@@ -1,8 +1,9 @@
-require("dotenv").config(); // Load environment variables from .env.
+import dotenv from "dotenv";
+import { defineConfig, devices } from "@playwright/test";
 
-const { defineConfig, devices } = require("@playwright/test");
+dotenv.config(); // Load environment variables from .env.
 
-module.exports = defineConfig({
+export default defineConfig({
 
   // Retry failed tests once.
   retries: 1,

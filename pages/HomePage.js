@@ -1,7 +1,7 @@
 // Page Object for the Home Page.
 // Contains reusable locators used by the UI tests.
 
-class HomePage {
+export default class HomePage {
 
   constructor(page) {
     this.page = page;
@@ -43,5 +43,3 @@ class HomePage {
   }
 
 }
-
-module.exports = HomePage;

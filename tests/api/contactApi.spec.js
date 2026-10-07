@@ -1,13 +1,13 @@
-const { test, expect } = require("@playwright/test");
-const contactResponseSchema = require("../schemas/contact-response.schema.json");
+import { test, expect } from "@playwright/test";
+import contactResponseSchema from "../schemas/contact-response.schema.json" with { type: "json" };
 
-const {
+import {
   messageExists,
   deleteMessage
-} = require("../../utils/databaseHelper");
-const {
+} from "../../utils/databaseHelper.js";
+import {
   createSchemaValidator,
-} = require("../../utils/schemaValidator");
+} from "../../utils/schemaValidator.js";
 
 const validateContactResponse = createSchemaValidator(contactResponseSchema);
 

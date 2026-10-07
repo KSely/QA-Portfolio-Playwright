@@ -1,7 +1,7 @@
 // Page Object for the Project Details page.
 // Contains locators used by the project page UI tests.
 
-class ProjectPage {
+export default class ProjectPage {
 
   constructor(page) {
     this.page = page;
@@ -43,5 +43,3 @@ class ProjectPage {
   }
 
 }
-
-module.exports = ProjectPage;

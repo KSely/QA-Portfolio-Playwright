@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
-const ProjectPage = require('../../pages/ProjectPage');
+import ProjectPage from '../../pages/ProjectPage.js';
 
 
 // ============================================================

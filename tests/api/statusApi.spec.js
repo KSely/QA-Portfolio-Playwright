@@ -1,8 +1,8 @@
-const { test, expect } = require("@playwright/test");
-const statusResponseSchema = require("../schemas/status-response.schema.json");
-const {
+import { test, expect } from "@playwright/test";
+import statusResponseSchema from "../schemas/status-response.schema.json" with { type: "json" };
+import {
   createSchemaValidator,
-} = require("../../utils/schemaValidator");
+} from "../../utils/schemaValidator.js";
 
 const validateStatusResponse = createSchemaValidator(statusResponseSchema);
 

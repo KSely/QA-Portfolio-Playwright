@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 // DEF-001: Register before navigation to capture shared-footer startup errors.
 test('project page should load without JavaScript page errors', async ({ page }) => {

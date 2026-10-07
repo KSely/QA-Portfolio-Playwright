@@ -1,7 +1,7 @@
-const { test, expect } = require("@playwright/test");
+import { test, expect } from "@playwright/test";
 
-const HomePage = require("../../pages/HomePage");
-const { messageExists, deleteMessage } = require("../../utils/databaseHelper");
+import HomePage from "../../pages/HomePage.js";
+import { messageExists, deleteMessage } from "../../utils/databaseHelper.js";
 
 
 // ============================================================

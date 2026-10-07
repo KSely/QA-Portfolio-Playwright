@@ -1,8 +1,8 @@
-const Ajv = require("ajv");
+import Ajv from "ajv";
 
 const ajv = new Ajv({ allErrors: true });
 
-function createSchemaValidator(schema) {
+export function createSchemaValidator(schema) {
   const validate = ajv.compile(schema);
 
   return (data) => {
@@ -14,7 +14,3 @@ function createSchemaValidator(schema) {
     };
   };
 }
-
-module.exports = {
-  createSchemaValidator,
-};

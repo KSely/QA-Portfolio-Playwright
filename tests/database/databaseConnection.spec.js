@@ -1,11 +1,13 @@
-const { test, expect } = require('@playwright/test');
-const { Client } = require('pg');
+import { test, expect } from '@playwright/test';
+import pg from 'pg';
 
-const {
+import {
   insertMessage,
   messageExists,
   deleteMessage
-} = require('../../utils/databaseHelper');
+} from '../../utils/databaseHelper.js';
+
+const { Client } = pg;
 
 
 // ============================================================
