@@ -7,13 +7,12 @@ export default class ProjectPage {
     this.page = page;
 
 
-    // Main project heading.
-    // first() is used because the page has more than one matching heading.
-    this.mainHeading = page
-      .getByRole("heading", {
-        name: "Full-Stack QA Automation Project",
-      })
-      .first();
+    // Unique level-one heading in the Project Overview section.
+    this.mainHeading = page.getByRole("heading", {
+      name: "Full-Stack QA Automation Project",
+      exact: true,
+      level: 1,
+    });
 
 
     // Project information sections.
@@ -40,6 +39,10 @@ export default class ProjectPage {
     this.databaseTestingHeading = page.getByRole("heading", {
       name: "Database Testing",
     });
+  }
+
+  async open() {
+    await this.page.goto("/project");
   }
 
 }

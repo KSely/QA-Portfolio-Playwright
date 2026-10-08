@@ -3,11 +3,13 @@ import contactResponseSchema from "../schemas/contact-response.schema.json" with
 
 import {
   messageExists,
-  deleteMessage
+  messageExistsByTestData,
 } from "../../utils/databaseHelper.js";
+import { createSchemaValidator } from "../../utils/schemaValidator.js";
 import {
-  createSchemaValidator,
-} from "../../utils/schemaValidator.js";
+  createContactTestData,
+  withContactCleanup,
+} from "../support/contactTestData.js";
 
 const validateContactResponse = createSchemaValidator(contactResponseSchema);
 
@@ -20,22 +22,11 @@ const validateContactResponse = createSchemaValidator(contactResponseSchema);
 test("POST /contact should create a message with valid data", async ({
   request,
 }) => {
+  const testData = createContactTestData({ prefix: "playwright-api" });
 
-  // Use unique data for each test run.
-  const timestamp = Date.now();
-
-  const testName = "Playwright API Test User";
-  const testEmail = `playwright.api.${timestamp}@example.com`;
-  const testMessage = `Playwright API contact test ${timestamp}`;
-
-  try {
-
+  await withContactCleanup(testData, async () => {
     const response = await request.post("/contact", {
-      form: {
-        name: testName,
-        email: testEmail,
-        message: testMessage
-      }
+      form: testData,
     });
 
     expect(response.status()).toBe(200);
@@ -43,9 +34,7 @@ test("POST /contact should create a message with valid data", async ({
     const responseBody = await response.json();
 
     expect(responseBody.success).toBe(true);
-    expect(responseBody.message).toBe(
-      "Message sent successfully!"
-    );
+    expect(responseBody.message).toBe("Message sent successfully!");
 
     const schemaResult = validateContactResponse(responseBody);
 
@@ -56,22 +45,12 @@ test("POST /contact should create a message with valid data", async ({
 
     // Verify that the message was saved in the database.
     const isMessageStored = await messageExists(
-      testEmail,
-      testMessage
+      testData.email,
+      testData.message,
     );
 
     expect(isMessageStored).toBe(true);
-
-  } finally {
-
-    // Remove test data even if the test fails.
-    await deleteMessage(
-      testEmail,
-      testMessage
-    );
-
-  }
-
+  });
 });
 
 
@@ -79,64 +58,49 @@ test("POST /contact should create a message with valid data", async ({
 // Missing Required Fields
 // ============================================================
 
-// Test data for missing required fields.
-const missingFieldTestCases = [
-
-  {
-    field: "name",
-    formData: {
-      email: "missing.name@example.com",
-      message: "Missing name API test"
-    }
-  },
-
-  {
-    field: "email",
-    formData: {
-      name: "Playwright API Test User",
-      message: "Missing email API test"
-    }
-  },
-
-  {
-    field: "message",
-    formData: {
-      name: "Playwright API Test User",
-      email: "missing.message@example.com"
-    }
-  }
-
-];
+const missingFieldTestCases = ["name", "email", "message"];
 
 // Run the same validation test for each missing field.
-for (const testCase of missingFieldTestCases) {
-
-  test(`POST /contact should reject request when ${testCase.field} is missing`,
+for (const missingField of missingFieldTestCases) {
+  test(`POST /contact should reject request when ${missingField} is missing`,
     async ({ request }) => {
-
-      const response = await request.post("/contact", {
-        form: testCase.formData
+      const testData = createContactTestData({
+        prefix: `playwright-api-missing-${missingField}`,
       });
+      const formData = { ...testData };
+      delete formData[missingField];
 
-      expect(response.status()).toBe(400);
-
-      const responseBody = await response.json();
-
-      expect(responseBody.success).toBe(false);
-      expect(responseBody.message).toBe(
-        "All fields are required."
+      const cleanupIdentifiers = getIdentifiersWithoutField(
+        testData,
+        missingField,
       );
 
-      const schemaResult = validateContactResponse(responseBody);
+      await withContactCleanup(cleanupIdentifiers, async () => {
+        const response = await request.post("/contact", { form: formData });
 
-      expect(
-        schemaResult.valid,
-        JSON.stringify(schemaResult.errors, null, 2),
-      ).toBe(true);
+        expect(response.status()).toBe(400);
 
+        const responseBody = await response.json();
+
+        expect(responseBody.success).toBe(false);
+        expect(responseBody.message).toBe("All fields are required.");
+
+        const schemaResult = validateContactResponse(responseBody);
+
+        expect(
+          schemaResult.valid,
+          JSON.stringify(schemaResult.errors, null, 2),
+        ).toBe(true);
+
+        // Verify that rejected data was not saved.
+        const isMessageStored = await messageExistsByTestData(
+           cleanupIdentifiers,
+        );
+
+        expect(isMessageStored).toBe(false);
+      });
     }
   );
-
 }
 
 
@@ -144,75 +108,50 @@ for (const testCase of missingFieldTestCases) {
 // Whitespace Required Fields
 // ============================================================
 
-// Test data for fields containing only spaces.
-const whitespaceFieldTestCases = [
-
-  {
-    field: "name",
-    formData: {
-      name: "   ",
-      email: "whitespace.name@example.com",
-      message: "Whitespace name API test"
-    }
-  },
-
-  {
-    field: "email",
-    formData: {
-      name: "Playwright API Test User",
-      email: "   ",
-      message: "Whitespace email API test"
-    }
-  },
-
-  {
-    field: "message",
-    formData: {
-      name: "Playwright API Test User",
-      email: "whitespace.message@example.com",
-      message: "   "
-    }
-  }
-
-];
+const whitespaceFieldTestCases = ["name", "email", "message"];
 
 // Run the same validation test for each whitespace field.
-for (const testCase of whitespaceFieldTestCases) {
-
-  test(`POST /contact should reject request when ${testCase.field} contains only whitespace`,
+for (const whitespaceField of whitespaceFieldTestCases) {
+  test(`POST /contact should reject request when ${whitespaceField} contains only whitespace`,
     async ({ request }) => {
-
-      const response = await request.post("/contact", {
-        form: testCase.formData
+      const testData = createContactTestData({
+        prefix: `playwright-api-whitespace-${whitespaceField}`,
       });
-
-      expect(response.status()).toBe(400);
-
-      const responseBody = await response.json();
-
-      expect(responseBody.success).toBe(false);
-      expect(responseBody.message).toBe(
-        "All fields are required."
+      const formData = {
+        ...testData,
+        [whitespaceField]: "   ",
+      };
+      const cleanupIdentifiers = getIdentifiersWithoutField(
+        testData,
+        whitespaceField,
       );
 
-      const schemaResult = validateContactResponse(responseBody);
+      await withContactCleanup(cleanupIdentifiers, async () => {
+        const response = await request.post("/contact", { form: formData });
 
-      expect(
-        schemaResult.valid,
-        JSON.stringify(schemaResult.errors, null, 2),
-      ).toBe(true);
+        expect(response.status()).toBe(400);
 
-      // Verify that rejected data was not saved.
-      const isMessageStored = await messageExists(
-        testCase.formData.email,
-        testCase.formData.message
-      );
+        const responseBody = await response.json();
 
-      expect(isMessageStored).toBe(false);
+        expect(responseBody.success).toBe(false);
+        expect(responseBody.message).toBe("All fields are required.");
 
+        const schemaResult = validateContactResponse(responseBody);
+
+        expect(
+          schemaResult.valid,
+          JSON.stringify(schemaResult.errors, null, 2),
+        ).toBe(true);
+
+        // Verify that rejected data was not saved.
+        const isMessageStored = await messageExistsByTestData(
+          cleanupIdentifiers,
+        );
+
+        expect(isMessageStored).toBe(false);
+      });
     }
   );
-
 }
 
 
@@ -220,77 +159,77 @@ for (const testCase of whitespaceFieldTestCases) {
 // Invalid Email Formats
 // ============================================================
 
-// Test data for invalid email formats.
 const invalidEmailTestCases = [
-
   {
     description: "missing @ symbol",
-    email: "invalidemail.com"
+    createInvalidEmail: (validEmail) => validEmail.replace("@", ""),
   },
-
   {
     description: "missing local part",
-    email: "@example.com"
+    createInvalidEmail: (validEmail) => validEmail.replace(/^[^@]+/, ""),
   },
-
   {
     description: "missing domain",
-    email: "user@"
+    createInvalidEmail: (validEmail) => validEmail.replace(/@.*$/, "@"),
   },
-
   {
     description: "missing top-level domain",
-    email: "user@example"
-  }
-
+    createInvalidEmail: (validEmail) => validEmail.replace(/\.com$/, ""),
+  },
 ];
 
 // Run the same validation test for each invalid email.
 for (const testCase of invalidEmailTestCases) {
-
   test(`POST /contact should reject email with ${testCase.description}`,
     async ({ request }) => {
-
-      // Use a unique message for each test run.
-      const timestamp = Date.now();
-
-      const testName = "Playwright API Test User";
-      const testMessage =
-        `Invalid email API test ${testCase.description} ${timestamp}`;
-
-      const response = await request.post("/contact", {
-        form: {
-          name: testName,
-          email: testCase.email,
-          message: testMessage
-        }
+      const generatedData = createContactTestData({
+        prefix: "playwright-api-invalid-email",
       });
+      const formData = {
+        ...generatedData,
+        email: testCase.createInvalidEmail(generatedData.email),
+      };
+      const cleanupIdentifiers = { message: formData.message };
 
-      expect(response.status()).toBe(400);
+      await withContactCleanup(cleanupIdentifiers, async () => {
+        const response = await request.post("/contact", { form: formData });
 
-      const responseBody = await response.json();
+        expect(response.status()).toBe(400);
 
-      expect(responseBody.success).toBe(false);
-      expect(responseBody.message).toBe(
-        "Invalid email address."
-      );
+        const responseBody = await response.json();
 
-      const schemaResult = validateContactResponse(responseBody);
+        expect(responseBody.success).toBe(false);
+        expect(responseBody.message).toBe("Invalid email address.");
 
-      expect(
-        schemaResult.valid,
-        JSON.stringify(schemaResult.errors, null, 2),
-      ).toBe(true);
+        const schemaResult = validateContactResponse(responseBody);
 
-      // Verify that rejected data was not saved.
-      const isMessageStored = await messageExists(
-        testCase.email,
-        testMessage
-      );
+        expect(
+          schemaResult.valid,
+          JSON.stringify(schemaResult.errors, null, 2),
+        ).toBe(true);
 
-      expect(isMessageStored).toBe(false);
+        // Verify that rejected data was not saved.
+        const isMessageStored = await messageExistsByTestData(
+          cleanupIdentifiers,
+        );
 
+        expect(isMessageStored).toBe(false);
+      });
     }
   );
+}
 
+function getIdentifiersWithoutField(testData, excludedField) {
+  if (excludedField === "email") {
+    return { message: testData.message };
+  }
+
+  if (excludedField === "message") {
+    return { email: testData.email };
+  }
+
+  return {
+    email: testData.email,
+    message: testData.message,
+  };
 }

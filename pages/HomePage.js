@@ -42,4 +42,23 @@ export default class HomePage {
     this.successMessage = page.locator('#success-message');
   }
 
+  async open() {
+    await this.page.goto('/');
+  }
+
+  async fillContactForm({ name, email, message }) {
+    await this.nameInput.fill(name);
+    await this.emailInput.fill(email);
+    await this.messageInput.fill(message);
+  }
+
+  async clickSendMessage() {
+    await this.sendMessageButton.click();
+  }
+
+  async submitContactForm(contactData) {
+    await this.fillContactForm(contactData);
+    await this.clickSendMessage();
+  }
+
 }

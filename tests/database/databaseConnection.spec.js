@@ -1,13 +1,15 @@
-import { test, expect } from '@playwright/test';
-import pg from 'pg';
+import { test, expect } from "@playwright/test";
 
 import {
+  createDatabaseClient,
   insertMessage,
   messageExists,
-  deleteMessage
-} from '../../utils/databaseHelper.js';
-
-const { Client } = pg;
+  deleteMessage,
+} from "../../utils/databaseHelper.js";
+import {
+  createContactTestData,
+  withContactCleanup,
+} from "../support/contactTestData.js";
 
 
 // ============================================================
@@ -15,99 +17,59 @@ const { Client } = pg;
 // ============================================================
 
 // Verify the PostgreSQL connection.
-test('should connect to PostgreSQL database successfully', async () => {
-
-  const client = new Client({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_DATABASE,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD
-  });
+test("should connect to PostgreSQL database successfully", async () => {
+  const client = createDatabaseClient();
 
   try {
-
     await client.connect();
 
     // Simple query to verify the connection.
-    const result = await client.query(
-      'SELECT 1 AS connection_test'
-    );
+    const result = await client.query("SELECT 1 AS connection_test");
 
     expect(result.rows[0].connection_test).toBe(1);
-
   } finally {
-
     // Always close the database connection.
     await client.end();
-
   }
-
 });
 
 
 // Verify the test data lifecycle.
-test('should create, verify, and clean up test data successfully', async () => {
+test("should create, verify, and clean up test data successfully", async () => {
+  const testData = createContactTestData({ prefix: "playwright-db" });
 
-  // Use unique data for each test run.
-  const timestamp = Date.now();
-
-  const testName = 'Playwright DB Test';
-  const testEmail = `db-test-${timestamp}@example.com`;
-  const testMessage = `Database lifecycle test ${timestamp}`;
-
-  let recordDeleted = false;
-
-  try {
-
+  await withContactCleanup(testData, async () => {
     // Insert test data.
     const insertedId = await insertMessage(
-      testName,
-      testEmail,
-      testMessage
+      testData.name,
+      testData.email,
+      testData.message,
     );
 
     expect(insertedId).toBeDefined();
 
-
     // Verify that the record exists.
     const existsAfterInsert = await messageExists(
-      testEmail,
-      testMessage
+      testData.email,
+      testData.message,
     );
 
     expect(existsAfterInsert).toBe(true);
 
-
     // Delete test data.
     const deletedRows = await deleteMessage(
-      testEmail,
-      testMessage
+      testData.email,
+      testData.message,
     );
 
     expect(deletedRows).toBe(1);
 
-    recordDeleted = true;
-
-
     // Verify that the record was removed.
     const existsAfterDelete = await messageExists(
-      testEmail,
-      testMessage
+      testData.email,
+      testData.message,
     );
 
     expect(existsAfterDelete).toBe(false);
-
-  } finally {
-
-    // Remove test data if normal cleanup did not complete.
-    if (!recordDeleted) {
-      await deleteMessage(
-        testEmail,
-        testMessage
-      );
-    }
-
-  }
-
+  });
 });

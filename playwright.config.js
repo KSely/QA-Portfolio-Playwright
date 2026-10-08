@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 dotenv.config(); // Load environment variables from .env.
 
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
+
 export default defineConfig({
 
   // Retry failed tests once.
@@ -17,7 +19,7 @@ export default defineConfig({
   use: {
 
     // URL of the application under test.
-    baseURL: "http://localhost:3000",
+    baseURL,
 
     // Take a screenshot when a test fails.
     screenshot: "only-on-failure",

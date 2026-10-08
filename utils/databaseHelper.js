@@ -4,13 +4,31 @@ import pg from "pg";
 
 const { Client } = pg;
 
+const REQUIRED_DATABASE_ENVIRONMENT_VARIABLES = [
+  "DB_HOST",
+  "DB_PORT",
+  "DB_DATABASE",
+  "DB_USER",
+  "DB_PASSWORD",
+];
+
 
 // ============================================================
 // Database Client
 // ============================================================
 
-// Create a client using environment variables.
-function createClient() {
+// Create a client using validated environment variables.
+export function createDatabaseClient() {
+  const missingVariables = REQUIRED_DATABASE_ENVIRONMENT_VARIABLES.filter(
+    (variableName) => !process.env[variableName]?.trim(),
+  );
+
+  if (missingVariables.length > 0) {
+    throw new Error(
+      `Missing required database environment variables: ${missingVariables.join(", ")}`,
+    );
+  }
+
   return new Client({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -27,7 +45,13 @@ function createClient() {
 
 // Check if a contact message exists in the database.
 export async function messageExists(email, message) {
-  const client = createClient();
+  return messageExistsByTestData({ email, message });
+}
+
+// Check for a test-owned message using its available unique identifiers.
+export async function messageExistsByTestData({ email, message }) {
+  const client = createDatabaseClient();
+  const { clause, values } = buildContactIdentifierClause({ email, message });
 
   try {
     await client.connect();
@@ -36,11 +60,10 @@ export async function messageExists(email, message) {
       `
         SELECT id
         FROM messages
-        WHERE email = $1
-          AND message = $2
+        WHERE ${clause}
         LIMIT 1
       `,
-      [email, message],
+      values,
     );
 
     return result.rowCount > 0;
@@ -58,7 +81,7 @@ export async function messageExists(email, message) {
 
 // Insert a message and return its database ID.
 export async function insertMessage(name, email, message) {
-  const client = createClient();
+  const client = createDatabaseClient();
 
   try {
     await client.connect();
@@ -87,7 +110,13 @@ export async function insertMessage(name, email, message) {
 
 // Delete a message and return the number of deleted rows.
 export async function deleteMessage(email, message) {
-  const client = createClient();
+  return deleteContactTestData({ email, message });
+}
+
+// Delete test-owned contact data using its available unique identifiers.
+export async function deleteContactTestData({ email, message }) {
+  const client = createDatabaseClient();
+  const { clause, values } = buildContactIdentifierClause({ email, message });
 
   try {
     await client.connect();
@@ -95,10 +124,9 @@ export async function deleteMessage(email, message) {
     const result = await client.query(
       `
         DELETE FROM messages
-        WHERE email = $1
-          AND message = $2
+        WHERE ${clause}
       `,
-      [email, message],
+      values,
     );
 
     return result.rowCount;
@@ -107,4 +135,30 @@ export async function deleteMessage(email, message) {
     // Always close the database connection.
     await client.end();
   }
+}
+
+function buildContactIdentifierClause({ email, message }) {
+  const conditions = [];
+  const values = [];
+
+  if (typeof email === "string" && email.length > 0) {
+    values.push(email);
+    conditions.push(`email = $${values.length}`);
+  }
+
+  if (typeof message === "string" && message.length > 0) {
+    values.push(message);
+    conditions.push(`message = $${values.length}`);
+  }
+
+  if (conditions.length === 0) {
+    throw new Error(
+      "Contact test-data lookup requires a non-empty email or message.",
+    );
+  }
+
+  return {
+    clause: conditions.join(" AND "),
+    values,
+  };
 }
