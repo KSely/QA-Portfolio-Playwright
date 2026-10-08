@@ -41,7 +41,7 @@ The framework demonstrates several types of automated testing:
 - **Regression Testing** — UI, API, and database regression coverage
 - **Defect Regression Testing** — automated reproduction and verification of confirmed defects
 - **Test Reporting** — Playwright HTML reports, screenshots, retries, and traces
-- **CI/CD** — GitHub Actions workflow for automated framework verification
+- **CI/CD Integration** — GitHub Actions provides automated CI testing, while the Application Under Test is deployed separately on Railway
 
 The UI automation follows the Page Object Model (POM) design pattern.
 
@@ -516,7 +516,7 @@ The contact endpoint tests cover:
 - Whitespace-only required fields
 - Invalid email formats
 - Database persistence for accepted requests
-- Database non-persistence for rejected whitespace and invalid-email requests
+- Database non-persistence for rejected missing-field, whitespace and invalid-email requests
 
 Data-driven tests are used for multiple validation scenarios to reduce unnecessary test duplication.
 
@@ -918,9 +918,10 @@ The configured full-suite execution count should not be confused with the scope 
 
 ---
 
-## CI/CD
+## CI/CD Integration
 
 The project includes a GitHub Actions workflow for automated Continuous Integration.
+The Application Under Test is deployed separately on Railway, while this Playwright repository uses GitHub Actions for automated CI verification.
 
 The workflow runs on:
 
@@ -1085,7 +1086,8 @@ This project demonstrates practical experience with:
 - Retry and trace diagnostics
 - npm-based test execution
 - Git-based version control
-- GitHub Actions CI/CD configuration
+- GitHub Actions CI configuration
+- Railway deployment of the Application Under Test
 - CI regression verification
 
 ---
