@@ -1,12 +1,35 @@
 # QA Portfolio - Playwright Automation Framework
 
-A QA automation framework built with JavaScript and Playwright for testing a full-stack portfolio web application.
-
-The project demonstrates practical automated testing across the UI, API, and database layers, including cross-browser testing, end-to-end validation, test data management, defect regression testing, reporting, and CI/CD integration.
+A JavaScript Playwright automation framework for testing a full-stack QA portfolio application across the UI, API, database, authentication, accessibility, and cross-browser layers.
 
 The Application Under Test (AUT) is maintained in a separate repository:
 
 [QA-Automation-Portfolio](https://github.com/KSely/QA-Automation-Portfolio)
+
+---
+
+## Project Overview
+
+This framework demonstrates practical Playwright automation against a real full-stack application rather than isolated demo pages.
+
+Coverage includes:
+
+- UI functional testing
+- Authentication and authorization
+- API testing
+- PostgreSQL validation
+- UI-to-database and API-to-database checks
+- Accessibility testing with axe-core
+- Cross-browser testing across Chromium, Firefox, and WebKit
+- Smoke and regression testing
+- Defect regression coverage
+- Test data creation and cleanup
+- Playwright HTML reporting
+- GitHub Actions CI
+
+The UI automation uses the Page Object Model to keep locators and page actions separate from test logic.
+
+Reusable helpers support database access, schema validation, authentication test data, and cleanup.
 
 ---
 
@@ -15,435 +38,248 @@ The Application Under Test (AUT) is maintained in a separate repository:
 - JavaScript
 - Node.js
 - Playwright 1.62.1
-- `@axe-core/playwright` 4.13.0
-- Ajv 8.20.0
-- PostgreSQL / node-postgres (`pg`)
+- `@axe-core/playwright`
+- Ajv
+- PostgreSQL / `pg`
 - npm
 - Playwright HTML Report
-- Git / GitHub
+- Git
+- GitHub
 - GitHub Actions
-
----
-
-## Project Overview
-
-This repository contains a Playwright automation framework created for a full-stack QA portfolio web application.
-
-The framework demonstrates several types of automated testing:
-
-- **UI Testing** — browser-based functional and navigation testing
-- **Accessibility Testing** — WCAG-oriented axe scans and focused keyboard/semantic checks in Chromium
-- **Cross-Browser Testing** — UI validation across Chromium, Firefox, and WebKit
-- **API Testing** — direct REST API validation using Playwright's `APIRequestContext`
-- **Database Testing** — PostgreSQL validation using the `pg` client
-- **End-to-End Testing** — UI-to-database validation of contact form workflows
-- **Smoke Testing** — focused validation of critical frontend and backend functionality
-- **Regression Testing** — UI, API, and database regression coverage
-- **Defect Regression Testing** — automated reproduction and verification of confirmed defects
-- **Test Reporting** — Playwright HTML reports, screenshots, retries, and traces
-- **CI/CD Integration** — GitHub Actions provides automated CI testing, while the Application Under Test is deployed separately on Railway
-
-The UI automation follows the Page Object Model (POM) design pattern.
-
-Reusable database helper functions are used for database validation, test data creation, persistence verification, and cleanup.
 
 ---
 
 ## Test Coverage
 
-The framework currently includes **37 unique automated tests** across the UI, accessibility, API, and database layers.
+The framework currently contains **52 unique automated cases**.
 
-| **Test Layer** | **Unique Tests** | **Execution** | **Configured Test Executions** |
-|---|---:|---|---:|
-| UI | 17 | Chromium, Firefox, and WebKit | 51 |
-| Accessibility | 5 | Chromium | 5 |
-| API | 13 | Executed once | 13 |
-| Database | 2 | Executed once | 2 |
-| **Total** | **37** | **Full configured suite** | **71** |
+| Test Layer | Unique Cases | Execution |
+|---|---:|---|
+| UI | 24 | Chromium, Firefox, WebKit |
+| Accessibility | 6 | Chromium |
+| API | 20 | Executed once |
+| Database | 2 | Executed once |
+| **Total** | **52** | |
 
-The 17 UI tests are configured to run across three Playwright-managed browser engines:
-
-- Chromium
-- Firefox
-- WebKit
-
-This provides **51 configured cross-browser UI executions** while keeping API and database tests independent from browser-specific execution.
-
-The full configured Playwright suite contains:
-
-**17 UI × 3 browsers + 5 accessibility + 13 API + 2 database = 71 configured executions before retries.**
-
-The configured execution count represents framework configuration and should not be confused with the scope of an individual verification cycle.
-
-Additional coverage includes:
-
-- Database validation for UI and API workflows
-- Positive and negative test scenarios
-- Browser-side form validation
-- API response and status-code validation
-- JSON Schema-based API contract validation
-- Data-driven negative testing
-- Test data creation and cleanup
-- JavaScript page-error detection
-- Server-side validation rejection recovery
-- Database non-persistence verification for rejected submissions
-- 2 critical smoke tests
-
-### Recent DEF-002 Chromium Regression Result
+The 24 UI cases run across three browser engines:
 
 ```text
-17 passed
+24 UI × 3 browsers = 72
+6 accessibility     =  6
+20 API               = 20
+2 database           =  2
+────────────────────────
+Total                = 100
+```
+
+The full configured suite therefore contains **100 test executions** before retries.
+
+Latest verified local full regression:
+
+```text
+100 passed
 0 failed
 0 skipped
 ```
 
-The GitHub Actions CI pipeline also completed successfully after the DEF-001 and DEF-002 fixes were published.
-
----
-
-## Project Structure
+Latest verified accessibility regression:
 
 ```text
-QA-Portfolio-Playwright/
-│
-├── .github/
-│   └── workflows/
-│       └── playwright-ci.yml
-│
-├── pages/
-│   ├── HomePage.js
-│   └── ProjectPage.js
-│
-├── tests/
-│   ├── accessibility/
-│   │   └── accessibility.spec.js
-│   │
-│   ├── api/
-│   │   ├── contactApi.spec.js
-│   │   └── statusApi.spec.js
-│   │
-│   ├── database/
-│   │   └── databaseConnection.spec.js
-│   │
-│   ├── schemas/
-│   │   ├── contact-response.schema.json
-│   │   └── status-response.schema.json
-│   │
-│   ├── support/
-│   │   └── contactTestData.js
-│   │
-│   └── ui/
-│       ├── contact.spec.js
-│       ├── home.spec.js
-│       ├── pageErrors.spec.js
-│       └── project.spec.js
-│
-├── utils/
-│   ├── databaseHelper.js
-│   └── schemaValidator.js
-│
-├── .env.example
-├── .gitignore
-├── package-lock.json
-├── package.json
-├── playwright.config.js
-└── README.md
+6 passed
+0 failed
+0 skipped
 ```
+
+The latest GitHub Actions Playwright workflow also completed successfully.
 
 ---
 
-## Test Suites
+## Main Coverage Areas
 
-The project supports separate test suites for different testing layers.
+### UI Testing
 
-### Smoke Suite
+The UI suite covers:
 
-Runs critical frontend and backend checks tagged with `@smoke`.
+- Home page content and navigation
+- Project and Automation pages
+- Contact form workflows
+- Positive and negative form validation
+- Successful contact submission
+- Database persistence after successful submission
+- Recovery after server-side validation rejection
+- JavaScript page-error detection
+- Registration
+- Login
+- Logout
+- Protected Account access
+- Guest access restrictions
+- Standard-user authorization
+- Admin authorization
+- Session persistence after refresh
+- Responsive navigation
+- Cross-browser regression
 
-```bash
-npm run test:smoke
-```
+### API Testing
 
-Current smoke coverage:
+Playwright's `APIRequestContext` is used for direct backend validation.
 
-- Backend availability through `GET /api/status`
-- Frontend availability through the Home Page
+Coverage includes:
 
----
+- `GET /api/status`
+- `POST /contact`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `GET /api/auth/admin`
+- Positive and negative scenarios
+- HTTP status codes
+- Response values and messages
+- Authentication state
+- Authorization behavior
+- Database persistence or non-persistence where applicable
+- JSON Schema validation with Ajv where implemented
 
-### Full Regression Suite
+### Database Testing
 
-Runs the complete configured Playwright suite:
+The framework connects directly to PostgreSQL using the `pg` client.
 
-- 17 UI tests in Chromium
-- 17 UI tests in Firefox
-- 17 UI tests in WebKit
-- 5 accessibility tests in Chromium
-- 13 API tests
-- 2 database tests
+Coverage includes:
 
-```bash
-npm test
-```
+- Database connectivity
+- Contact-message persistence
+- Verification that rejected contact data is not stored
+- User creation after registration
+- Normalized email values
+- Default `user` role
+- bcrypt password-hash verification
+- User / Admin role verification
+- Test-data lifecycle validation
+- Parameterized SQL
+- Cleanup of test-owned users, messages, and session records
 
-The configured full regression suite contains **71 test executions before retries**.
+### Accessibility Testing
 
----
+Accessibility checks use Playwright and axe-core.
 
-### UI Suite
+Coverage includes:
 
-Runs the 17 UI tests across Chromium, Firefox, and WebKit.
+- Full-page WCAG-oriented scans
+- Color contrast
+- Accessible names
+- Form semantics
+- Keyboard focus
+- Enter activation
+- Contact-form focus order
+- Authentication navigation focus state
+- Responsive navigation behavior
 
-```bash
-npm run test:ui
-```
-
-This produces **51 configured UI test executions before retries**.
-
-Individual browser projects can also be executed separately:
-
-```bash
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-npx playwright test --project=webkit
-```
-
----
-
-### Accessibility Suite
-
-Runs five system/UI accessibility tests once in Chromium:
-
-- Full-page axe scans for `/`, `/project`, and `/project/automation`
-- Main-navigation link focus and Enter activation
-- Contact-form accessible names, required semantics, and keyboard focus order
-
-```bash
-npm run test:accessibility
-```
-
-The axe scans use the supported WCAG A/AA tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, and `wcag22aa`. Genuine violations fail the tests and include the axe rule ID, impact, help text, and affected selectors in the failure output.
-
-Automated scans detect only some accessibility issues. They do not prove full WCAG compliance or replace manual testing for keyboard-only use, logical tab order, visible focus, zoom and reflow, screen-reader behavior, meaningful reading order, or validation feedback usability.
-
----
-
-### API Suite
-
-Runs API tests independently.
-
-```bash
-npm run test:api
-```
-
-Current API suite:
+Current accessibility result:
 
 ```text
-13 tests
+6 passed
+0 failed
+0 skipped
 ```
+
+Automated accessibility testing covers only part of WCAG. Manual testing is still required for areas such as screen-reader behavior, zoom and reflow, reading order, and broader usability.
 
 ---
 
-### Database Suite
+## Authentication and Authorization Coverage
 
-Runs PostgreSQL integration tests independently.
+The AUT uses server-side sessions and role-based authorization.
 
-```bash
-npm run test:db
-```
+Playwright coverage includes both browser and API scenarios.
 
-Current database suite:
+### UI Authentication Coverage
 
-```text
-2 tests
-```
+The UI suite verifies:
 
----
+- Registration creates a usable account
+- Registration leads to protected Account access
+- Session persists after page refresh
+- Logout invalidates the authenticated session
+- Existing users can log in
+- Guests cannot access the protected Account page
+- Standard users cannot access the Admin page
+- Admin users can access the Admin page after controlled role elevation
 
-## Prerequisites
+### API Authentication Coverage
 
-Before running the tests, make sure the following are installed and available:
+The API suite verifies:
 
-- Node.js
-- npm
-- PostgreSQL
-- The portfolio web application running locally on `http://localhost:3000`
+- Registration creates a session
+- Email normalization
+- Public registration cannot assign an admin role
+- No credentials or password hashes are returned in responses
+- Registered passwords are stored as bcrypt hashes
+- Duplicate normalized email returns `409`
+- Existing-user login succeeds
+- Wrong password and unknown email return the same generic `401`
+- Unauthenticated `/api/auth/me` returns `401`
+- Logout invalidates the session
+- `/api/auth/admin` returns the expected unauthenticated, user, and admin results
 
-Install project dependencies:
+### Session and Role Validation
 
-```bash
-npm install
-```
+Authentication requests use browser-managed or API-managed session cookies.
 
-Install the Playwright-managed browser binaries:
+The tests verify:
 
-```bash
-npx playwright install
-```
+- Session creation
+- Session persistence
+- Session invalidation
+- Protected resource access
+- User / Admin authorization boundaries
+- Database state where applicable
 
-The framework uses Playwright-managed Chromium, Firefox, and WebKit for cross-browser UI testing.
-
----
-
-## Configuration
-
-Database configuration is managed through environment variables stored in a local `.env` file.
-
-The real `.env` file is excluded from version control.
-
-A safe configuration template is provided in:
-
-```text
-.env.example
-```
-
-Example:
-
-```env
-BASE_URL=http://localhost:3000
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_DATABASE=qa_portfolio
-DB_USER=postgres
-DB_PASSWORD=your_database_password
-```
-
-Create a local `.env` file from this template and provide the appropriate local PostgreSQL credentials. `BASE_URL` selects the authorized application environment under test and defaults to `http://localhost:3000` when it is not set.
-
-The application base URL is resolved in `playwright.config.js`:
-
-```javascript
-const baseURL = process.env.BASE_URL || "http://localhost:3000";
-```
-
-The framework uses separate Playwright projects for UI, accessibility, API, and database testing.
-
-UI tests run across three Playwright-managed browser engines:
-
-```javascript
-projects: [
-  {
-    name: "chromium",
-    testMatch: /tests\/ui\/.*\.spec\.js/,
-    use: {
-      ...devices["Desktop Chrome"]
-    }
-  },
-  {
-    name: "firefox",
-    testMatch: /tests\/ui\/.*\.spec\.js/,
-    use: {
-      ...devices["Desktop Firefox"]
-    }
-  },
-  {
-    name: "webkit",
-    testMatch: /tests\/ui\/.*\.spec\.js/,
-    use: {
-      ...devices["Desktop Safari"]
-    }
-  },
-  {
-    name: "accessibility",
-    testMatch: /tests\/accessibility\/.*\.spec\.js/,
-    use: {
-      ...devices["Desktop Chrome"]
-    }
-  }
-]
-```
-
-Accessibility, API, and database tests are configured as separate projects and run once rather than being repeated for every browser engine.
-
-This keeps cross-browser execution focused on functional UI coverage while avoiding unnecessary duplication of accessibility, API, and database tests.
+Test users use unique generated email addresses and are removed after execution.
 
 ---
 
 ## Cross-Browser Testing
 
-The UI automation is configured against three Playwright-managed browser engines:
+The functional UI suite runs across:
 
-- **Chromium**
-- **Firefox**
-- **WebKit**
+- Chromium
+- Firefox
+- WebKit
 
-Each browser project executes the same 17 UI test cases.
+Each browser project executes the same 24 UI cases.
 
 ```text
-Chromium    17
-Firefox     17
-WebKit      17
+Chromium    24
+Firefox     24
+WebKit      24
 ──────────────
-UI Total    51
+UI Total    72
 ```
 
-This configuration validates UI behavior across multiple browser engines while keeping the test architecture centralized in one framework.
-
-During earlier cross-browser verification, a success-message locator was updated to use the element's unique ID:
-
-```javascript
-page.locator("#success-message")
-```
-
-This provided consistent visibility behavior across Chromium, Firefox, and WebKit.
+Accessibility, API, and database tests run in separate Playwright projects so they are not unnecessarily repeated for every browser engine.
 
 ---
 
 ## Page Object Model
 
-The UI automation uses the Page Object Model to separate page-specific locators from test logic.
+The framework uses Page Object Model classes for reusable page interaction.
 
-```text
-pages/
-├── HomePage.js
-└── ProjectPage.js
-```
+Current page objects include coverage for:
 
-`HomePage.js` contains reusable locators and focused user actions for:
+- Home
+- Project
+- Login
+- Register
+- Account
+- Admin
 
-- Main page content
-- Project navigation
-- Contact form fields
-- Contact form submission
-- Success message validation
-- Opening the page and completing the contact form
-
-`ProjectPage.js` contains reusable locators for the Project Details page and its main content sections, plus relative-route navigation to the page.
-
-This structure improves test readability, locator reuse, and maintainability.
+This keeps test intent readable and reduces repeated locator and interaction code.
 
 ---
 
-## UI Testing
+## UI-to-Database Validation
 
-The UI suite provides functional and regression coverage configured across Chromium, Firefox, and WebKit.
-
-Current UI coverage includes:
-
-- Home page availability
-- Page title and main heading validation
-- Navigation to the Featured Project section
-- Navigation to the Project Details page
-- Project page content validation
-- Contact form successful submission
-- Required Name validation
-- Invalid Email validation
-- Required Message validation
-- Success message validation
-- Database persistence after successful form submission
-- Database non-persistence after rejected form submissions
-- JavaScript page-error detection on Project and Automation pages
-- Contact-form recovery after server-side validation rejection
-- Verification that rejected contact data is not persisted
-
-The contact form negative tests use browser-side HTML5 validation where appropriate and also verify database behavior.
-
----
-
-### UI-to-Database Validation
-
-The positive contact form test validates the workflow across multiple application layers:
+The contact form includes end-to-end validation from the browser to PostgreSQL.
 
 ```text
 Browser UI
@@ -459,579 +295,332 @@ PostgreSQL
 Database Verification
 ```
 
-The test:
+The positive workflow:
 
 1. Opens the application
 2. Enters valid contact information
-3. Submits the form through the UI
-4. Verifies the success message
-5. Queries PostgreSQL directly
-6. Confirms that the submitted data was persisted
-7. Removes the generated test record during cleanup
+3. Submits the form
+4. Verifies the success state
+5. Queries PostgreSQL
+6. Confirms the submitted data was persisted
+7. Removes the generated test record
 
-This provides end-to-end validation from the browser through the backend to the database.
+Negative workflows also verify that rejected data is not persisted.
 
 ---
 
-## API Testing
+## API Contract Validation
 
-Playwright's built-in `APIRequestContext` is used to test backend endpoints directly without opening a browser. Ajv provides JSON Schema Validation for API contract validation alongside the existing functional assertions.
+Ajv is used for JSON Schema validation alongside normal Playwright assertions.
 
-The API tests validate:
+Schema validation checks response structure and data types, while Playwright assertions continue to verify exact business values and messages.
 
-- HTTP status codes
-- Exact response values and messages
-- Database persistence or non-persistence where applicable
-- JSON response structure
-- Required properties
-- Property data types
+Implemented schema coverage includes:
 
-### `GET /api/status`
-
-The status endpoint tests validate:
-
-- Successful HTTP response
-- HTTP status code `200`
-- Backend status value
-- Response message
-- JSON `Content-Type` response header
-
-Expected response:
-
-```json
-{
-  "status": "ok",
-  "message": "QA Automation Portfolio backend is running"
-}
-```
-
-### `POST /contact`
-
-The contact endpoint tests cover:
-
-- Successful contact submission
-- HTTP response status
-- JSON response body
-- Missing required fields
-- Whitespace-only required fields
-- Invalid email formats
-- Database persistence for accepted requests
-- Database non-persistence for rejected missing-field, whitespace and invalid-email requests
-
-Data-driven tests are used for multiple validation scenarios to reduce unnecessary test duplication.
-
-Invalid email scenarios include:
-
-```text
-invalidemail.com
-@example.com
-user@
-user@example
-```
-
-### JSON Schema Validation
-
-Playwright performs each API request, and `response.json()` converts the response body into a JavaScript object. Ajv validates that object against the appropriate JSON Schema, and Playwright `expect()` asserts that validation passed. Schema validation adds response-structure and data-type checks; normal Playwright assertions continue to verify exact business values and messages.
-
-The implemented schemas are:
-
-- `tests/schemas/status-response.schema.json`
-  - Validates a root object with required `status` and `message` properties.
-  - Requires both properties to be strings.
-- `tests/schemas/contact-response.schema.json`
-  - Validates a root object with required `success` and `message` properties.
-  - Requires `success` to be a boolean and `message` to be a string.
-
-The reusable `utils/schemaValidator.js` helper compiles each Ajv schema once and returns the validation status with detailed Ajv errors. When a response does not match its schema, the Playwright assertion includes useful missing-property or incorrect-type diagnostics.
-
-Schema validation currently covers these existing API scenarios:
-
-- Successful `GET /api/status`
+- `GET /api/status`
 - Successful `POST /contact`
-- Missing required-field rejections
-- Whitespace-only required-field rejections
-- Invalid-email rejections
-
-No schema-only tests were added. The existing API suite remains at **13 tests**.
-
----
-
-## Database Testing
-
-The framework connects directly to PostgreSQL using the `pg` client.
-
-Database testing includes:
-
-- PostgreSQL connectivity validation
-- Direct SQL queries
-- Controlled test data creation
-- Verification of stored contact messages
-- Verification that rejected data is not persisted where applicable
-- Test-data lifecycle validation
-- Automatic cleanup of generated records
-- Parameterized SQL queries
-
-Reusable database operations are implemented in:
-
-```text
-utils/databaseHelper.js
-```
-
-The helper provides:
-
-```text
-createDatabaseClient()
-insertMessage()
-messageExists()
-messageExistsByTestData()
-deleteMessage()
-deleteContactTestData()
-```
-
-Database client creation validates the required `DB_*` environment variables before connecting.
-
----
-
-### Database Connection Test
-
-A lightweight query verifies that the PostgreSQL connection is working:
-
-```sql
-SELECT 1 AS connection_test
-```
-
----
-
-### Test Data Lifecycle
-
-The database lifecycle test validates:
-
-```text
-INSERT
-  ↓
-Verify record exists
-  ↓
-DELETE
-  ↓
-Verify one record was deleted
-  ↓
-Verify record no longer exists
-```
-
-Unique test data is generated for each execution.
-
-Database connections are closed after operations, and safety cleanup is used so failed test runs do not leave unnecessary test records in PostgreSQL.
-
----
-
-## Defects Found by Automation
-
-Automation and structured source/test review identified several validation and UI defects during framework development.
-
-### Whitespace Validation
-
-Negative API tests revealed that whitespace-only values could pass required-field validation and be persisted in PostgreSQL.
-
-The backend validation was updated to reject:
-
-- Missing values
-- Empty values
-- Whitespace-only values
-
-Regression tests were then used to verify the fix and protect the behavior from future regressions.
-
----
-
-### Email Format Validation
-
-API automation also identified that incomplete email addresses such as:
-
-```text
-test@
-```
-
-were accepted because the original validation only checked whether the email contained an `@` character.
-
-The backend email validation was improved, and additional data-driven API tests were added for invalid email formats.
-
-Database assertions verify that rejected invalid-email requests are not persisted.
-
----
-
-### DEF-001 — Shared Footer JavaScript Error
-
-Regression investigation identified a shared JavaScript error on pages where the contact form was not present.
-
-The shared footer attempted to register a contact-form event listener when the contact form element was `null`.
-
-Affected routes included:
-
-- `/project`
-- `/project/automation`
-
-The browser generated a JavaScript `TypeError`.
-
-Two Playwright regression tests were added in:
-
-```text
-tests/ui/pageErrors.spec.js
-```
-
-The regression tests:
-
-- Capture JavaScript `pageerror` events
-- Reproduced the defect before the fix
-- Failed against the defective implementation
-- Passed after null-safe event binding was introduced
-- Continued to pass during broader regression verification
-
-The application fix used null-safe event binding so the shared footer script does not fail on pages without the contact form.
-
----
-
-### DEF-002 — Contact Form Recovery After Server-Side Validation Rejection
-
-A browser-valid contact submission could be rejected by server-side validation while leaving the UI stuck in the submitting state.
-
-The backend correctly returned:
-
-```json
-{
-  "success": false,
-  "message": "All fields are required."
-}
-```
-
-Before the fix:
-
-- The submit button remained disabled
-- The button text remained `Sending...`
-- Normal button-based retry was unavailable
-- The rejected submission was correctly not persisted in PostgreSQL
-
-A focused Playwright regression test was added:
-
-```text
-contact form should recover after server-side validation rejection
-```
-
-The test verifies:
-
-- Browser-valid data reaches the backend
-- The backend returns HTTP `400`
-- The JSON response contains `success: false`
-- No matching database record is created
-- The submit button becomes enabled again
-- The button text returns to `Send Message`
-- The UI no longer remains in the `Sending...` state
-
-The regression test failed before the application fix.
-
-After the fix:
-
-- The submit button is restored
-- The button text returns to `Send Message`
-- Valid submission behavior remains unchanged
-- Valid data still persists correctly
-- Rejected data remains non-persistent
-- The focused regression test passes
-
-A broader Chromium UI regression subsequently completed with:
-
-```text
-17 passed
-0 failed
-0 skipped
-```
-
-The DEF-002 regression test is also included in the configured cross-browser CI execution.
-
----
-
-## Defect Verification Workflow
-
-The project demonstrates a structured defect lifecycle:
-
-**Identify → Reproduce → Document → Automate → Fail → Fix → Retest → Regression → Report**
-
-For confirmed defects:
-
-1. The problem is identified and reproduced
-2. The defect is documented
-3. Focused regression coverage is added
-4. The automated test reproduces the pre-fix failure
-5. The application is fixed
-6. The focused test is rerun
-7. Related functionality is verified
-8. Broader regression testing is performed
-9. Results are documented and traced
-
-Detailed QA documentation is maintained in the AUT repository:
-
-[QA Documentation](https://github.com/KSely/QA-Automation-Portfolio/tree/main/docs/qa)
+- Missing required-field responses
+- Whitespace-only validation responses
+- Invalid-email responses
+
+No separate schema-only test count is added; schema validation is part of the existing API cases.
 
 ---
 
 ## Test Data Management
 
-Database-relevant contact tests use readable, test-owned values containing a UUID generated by Node.js.
+Tests use unique test-owned data to remain repeatable and independent.
 
-Example:
+Contact and authentication data use generated identifiers so parallel and repeated executions do not depend on shared records.
 
-```javascript
-const testData = createContactTestData({ prefix: "playwright-api" });
-```
+Cleanup removes test-owned data after validation.
 
-This keeps repeated, parallel, and cross-browser executions independent without adding a test-data dependency.
+Database operations use parameterized SQL.
 
-Tests that create data also remove it after validation.
-
-Cleanup runs after the test body and reports cleanup errors without discarding an earlier test failure.
-
-The DEF-002 regression test also checks whether rejected data was unexpectedly persisted before attempting cleanup.
+For authentication scenarios, cleanup also removes related server-side session records where applicable.
 
 ---
 
-## Playwright Reporting
+## Defect Regression Coverage
 
-The framework uses Playwright's built-in HTML reporter.
+The framework includes automated regression coverage for confirmed application defects.
 
-After running the tests, open the report with:
+### DEF-001 — Shared Footer JavaScript Error
 
-```bash
-npx playwright show-report
-```
+A shared footer script attempted to bind a contact-form event listener on pages where the form did not exist.
 
-The report provides information such as:
+Playwright reproduced the JavaScript error before the fix and verified the null-safe event-binding fix afterward.
 
-- Passed and failed tests
-- Skipped tests
-- Flaky test identification
-- Execution duration
-- Individual test results
-- Failure details
-- Browser/project information
+### DEF-002 — Contact Form Recovery After Server-Side Rejection
 
-The generated `playwright-report` directory is excluded from version control.
+A server-side validation rejection left the contact form submit button disabled in the `Sending...` state.
 
----
+Playwright verified:
 
-## Failure Diagnostics
+- HTTP `400` rejection
+- `success: false`
+- No matching database record
+- Submit button recovery
+- Button text restored to `Send Message`
 
-The framework includes several features to support failure investigation.
+The regression test failed before the fix and passed after the application correction.
 
-### Screenshots
+### DEF-003 — Home Page CTA Contrast
 
-A screenshot is captured when a test fails:
+axe-core identified insufficient contrast on the Home page project-details button.
 
-```javascript
-screenshot: "only-on-failure"
-```
+The contrast was corrected and accessibility regression passed.
 
-### Retry Strategy
+### DEF-004 — Architecture Label Contrast
 
-Failed tests are retried once according to the configured framework behavior:
+axe-core identified insufficient contrast on Project-page architecture connector labels.
 
-```javascript
-retries: 1
-```
+The label color was updated and the accessibility regression passed.
 
-### Playwright Trace
+### DEF-005 — Authentication Navigation Contrast
 
-A Playwright trace is recorded during the first retry:
+The `Login / Account` navigation link could extend outside the dark navbar and appear over the white page background.
 
-```javascript
-trace: "on-first-retry"
-```
+The responsive navigation layout was corrected and the existing accessibility coverage verifies the fixed state.
 
-Trace data can be used to investigate:
+### DEF-006 — Authentication Link Keyboard-Focus Contrast
 
-- Test actions
-- Page state
-- Network activity
-- Timing
-- Failure context
+The authentication navigation link inherited a dark Bootstrap focus color against the dark navbar.
+
+A dedicated Playwright accessibility case verifies the corrected keyboard-focus color and interaction behavior.
+
+All six documented defects are closed and passed retesting.
 
 ---
 
-## Smoke and Regression Testing
+## Responsive Navigation Accessibility
 
-Two critical tests are currently tagged with:
+The application navbar can be expanded on larger viewports or collapsed behind the Bootstrap navigation toggle on narrower viewports.
 
-```text
-@smoke
-```
+The accessibility tests support both states.
 
-The smoke suite checks:
+When a navigation link is hidden by the responsive menu, the test:
 
-- Frontend availability
-- Backend availability
+1. Locates the navigation toggle
+2. Verifies the toggle is visible and enabled
+3. Focuses it with the keyboard
+4. Activates it with `Enter`
+5. Confirms `aria-expanded="true"`
+6. Continues the keyboard-accessibility validation on the target link
 
-Run it with:
+This keeps the accessibility checks aligned with the current responsive application behavior.
 
-```bash
-npm run test:smoke
-```
+---
 
-The framework contains **37 unique tests**.
+## Test Suites
 
-Because the 17 UI tests are configured across three browser engines and the 5 accessibility tests run once in Chromium, the complete configured Playwright run contains **71 executions before retries**.
+### Full Regression
 
-```text
-Unique Tests
-
-UI             17
-Accessibility   5
-API            13
-Database        2
-──────────────────
-TOTAL          37
-
-
-Configured Executions
-
-Chromium UI    17
-Firefox UI     17
-WebKit UI      17
-Accessibility   5
-API            13
-Database        2
-──────────────────
-TOTAL          71
-```
-
-Run the complete configured suite with:
+Runs the complete configured Playwright suite:
 
 ```bash
 npm test
 ```
 
-A focused Chromium UI regression performed after the DEF-002 fix completed successfully:
+Current configured execution:
 
 ```text
-17 passed
-0 failed
-0 skipped
+100 executions
 ```
 
-The configured full-suite execution count should not be confused with the scope of an individual defect-verification cycle.
+### UI
+
+Runs the functional UI suite across Chromium, Firefox, and WebKit:
+
+```bash
+npm run test:ui
+```
+
+Individual browsers can also be run directly:
+
+```bash
+npx playwright test --project=chromium
+npx playwright test --project=firefox
+npx playwright test --project=webkit
+```
+
+### Accessibility
+
+Runs the accessibility project in Chromium:
+
+```bash
+npm run test:accessibility
+```
+
+### API
+
+Runs API tests independently:
+
+```bash
+npm run test:api
+```
+
+### Database
+
+Runs PostgreSQL tests independently:
+
+```bash
+npm run test:db
+```
+
+### Smoke
+
+Runs critical tests tagged with `@smoke`:
+
+```bash
+npm run test:smoke
+```
+
+---
+
+## Project Structure
+
+```text
+QA-Portfolio-Playwright/
+├── .github/
+│   └── workflows/
+│       └── playwright-ci.yml
+├── pages/
+│   ├── AccountPage.js
+│   ├── AdminPage.js
+│   ├── HomePage.js
+│   ├── LoginPage.js
+│   ├── ProjectPage.js
+│   └── RegisterPage.js
+├── tests/
+│   ├── accessibility/
+│   ├── api/
+│   ├── database/
+│   ├── schemas/
+│   ├── support/
+│   └── ui/
+├── utils/
+│   ├── databaseHelper.js
+│   └── schemaValidator.js
+├── .env.example
+├── .gitignore
+├── package.json
+├── package-lock.json
+├── playwright.config.js
+└── README.md
+```
+
+---
+
+## Prerequisites
+
+Before running the tests, install:
+
+- Node.js
+- npm
+- PostgreSQL
+- Playwright-managed browsers
+
+Install project dependencies:
+
+```bash
+npm install
+```
+
+Install browser binaries:
+
+```bash
+npx playwright install
+```
+
+The AUT must also be available locally or through an authorized configured environment.
+
+---
+
+## Configuration
+
+Local configuration is provided through `.env`.
+
+Example:
+
+```env
+BASE_URL=http://localhost:3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=qa_portfolio
+DB_USER=postgres
+DB_PASSWORD=your_database_password
+```
+
+The real `.env` file is excluded from version control.
+
+`BASE_URL` selects the application environment under test and defaults to `http://localhost:3000` when not set.
+
+The framework keeps UI, accessibility, API, and database execution in separate Playwright projects.
+
+---
+
+## Reporting and Failure Diagnostics
+
+The framework uses Playwright's built-in HTML reporter.
+
+Open the report with:
+
+```bash
+npx playwright show-report
+```
+
+Failure diagnostics include:
+
+- Screenshots on failure
+- One configured retry
+- Trace recording on the first retry
+- Browser / project information
+- Failure details
+- Execution duration
+
+Current configuration includes:
+
+```javascript
+screenshot: "only-on-failure"
+retries: 1
+trace: "on-first-retry"
+```
+
+The generated `playwright-report` directory is excluded from version control.
 
 ---
 
 ## CI/CD Integration
 
-The project includes a GitHub Actions workflow for automated Continuous Integration.
-The Application Under Test is deployed separately on Railway, while this Playwright repository uses GitHub Actions for automated CI verification.
+GitHub Actions provides automated CI verification for this framework.
 
-The workflow runs on:
-
-- Pushes to the `main` branch
-- Pull requests targeting the `main` branch
-
-The CI pipeline:
+The workflow:
 
 1. Runs on a GitHub-hosted Ubuntu runner
-2. Starts a PostgreSQL 16 service container
-3. Checks out the Playwright automation repository
-4. Checks out the portfolio application under test
+2. Starts PostgreSQL 16
+3. Checks out the Playwright repository
+4. Checks out the AUT repository
 5. Sets up Node.js 22
-6. Installs the Playwright project dependencies using `npm ci`
-7. Installs the application dependencies using `npm ci`
-8. Creates the test and application environment configurations
-9. Initializes the required PostgreSQL database schema
-10. Starts the portfolio application under test
-11. Verifies application availability through `GET /api/status`
-12. Installs the Playwright-managed browser binaries and required system dependencies
-13. Runs the API test suite, including Ajv JSON Schema validation
-14. Runs the database test suite
-15. Runs the smoke test suite
-16. Runs the Chromium accessibility test suite
-17. Runs the cross-browser UI test suite across Chromium, Firefox, and WebKit
-18. Uploads the Playwright HTML report as a GitHub Actions artifact if the workflow fails
+6. Installs dependencies
+7. Creates test and application environment configuration
+8. Initializes the PostgreSQL schema
+9. Starts the AUT
+10. Verifies application availability through `GET /api/status`
+11. Installs Playwright browser binaries and required system dependencies
+12. Runs API tests
+13. Runs database tests
+14. Runs smoke tests
+15. Runs accessibility tests
+16. Runs cross-browser UI tests
+17. Uploads the Playwright HTML report on failure
 
-Workflow:
-
-```text
-Push / Pull Request
-        ↓
-GitHub Actions
-        ↓
-Ubuntu Runner
-        ↓
-PostgreSQL 16
-        ↓
-Checkout Playwright Framework
-        ↓
-Checkout Application Under Test
-        ↓
-Node.js 22
-        ↓
-Install Dependencies
-        ↓
-Environment Configuration
-        ↓
-Database Schema
-        ↓
-Start Application
-        ↓
-Application Health Check
-        ↓
-Install Playwright Browsers
-        ↓
-API Tests
-        ↓
-Database Tests
-        ↓
-Smoke Tests
-        ↓
-Accessibility Tests
-        ↓
-Cross-Browser UI Tests
-        ↓
-CI Result
-```
-
-The automated CI test stages use:
-
-```bash
-npm run test:api
-npm run test:db
-npm run test:smoke
-npm run test:accessibility
-npm run test:ui
-```
-
-JSON Schema validation runs automatically within the existing `npm run test:api` stage. No separate schema-validation workflow or test stage is required.
-
-The existing GitHub Actions workflow completed successfully with the Ajv schema assertions included in that API stage.
-
-The UI suite contains 17 UI cases configured across Chromium, Firefox, and WebKit, producing **51 configured cross-browser UI executions before retries**.
-
-The CI workflow runs the smoke suite as a separate gate before the broader UI stage, so smoke-tagged UI scenarios may execute again when the complete UI suite runs.
-
-If a test stage fails, the generated Playwright HTML report is uploaded as a GitHub Actions artifact for failure investigation.
-
-The workflow configuration is stored in:
-
-```text
-.github/workflows/playwright-ci.yml
-```
-
----
-
-### Latest Regression CI Verification
-
-After the DEF-001 and DEF-002 regression tests and corresponding application fixes were published, the Playwright CI workflow completed successfully.
-
-The GitHub Actions pipeline verified the updated regression coverage against the current Application Under Test across the configured CI test stages.
-
-This provides independent CI verification that the DEF-001 and DEF-002 regression tests execute successfully against the corrected application.
+The latest workflow completed successfully against the current AUT.
 
 ---
 
 ## npm Scripts
-
-The project provides separate commands for the main test suites:
 
 ```json
 {
@@ -1046,8 +635,6 @@ The project provides separate commands for the main test suites:
 }
 ```
 
-These commands allow the full configured suite or individual testing layers to be executed independently.
-
 ---
 
 ## Framework Highlights
@@ -1056,39 +643,26 @@ This project demonstrates practical experience with:
 
 - Playwright browser automation
 - JavaScript test automation
-- Cross-browser testing
-- Chromium, Firefox, and WebKit browser engines
-- Playwright project configuration
 - Page Object Model
+- Cross-browser testing
 - UI functional testing
-- WCAG-oriented axe accessibility scanning
-- Keyboard and form-semantics accessibility checks
+- Authentication and authorization testing
+- Server-side session validation
 - REST API testing
-- JSON Schema Validation with Ajv
-- JSON Schema-based API contract validation
-- Positive and negative testing
-- Data-driven test design
-- PostgreSQL database integration
-- UI-to-database end-to-end validation
-- HTTP status and response validation
-- Database persistence validation
-- Parameterized SQL queries
-- Test data lifecycle management
-- Automatic test data cleanup
+- JSON Schema validation with Ajv
+- Accessibility testing with axe-core
+- Keyboard navigation checks
+- PostgreSQL integration
+- UI-to-database validation
+- API-to-database validation
+- Parameterized SQL
+- Test-data lifecycle management
+- Automatic cleanup
 - Smoke and regression testing
 - Defect regression automation
-- JavaScript page-error detection
-- Server-side rejection recovery validation
-- Pre-fix failure and post-fix verification
-- Environment-based configuration
+- Failure diagnostics
 - Playwright HTML reporting
-- Failure screenshots
-- Retry and trace diagnostics
-- npm-based test execution
-- Git-based version control
-- GitHub Actions CI configuration
-- Railway deployment of the Application Under Test
-- CI regression verification
+- GitHub Actions CI
 
 ---
 
@@ -1116,20 +690,9 @@ Independent Apache JMeter performance testing project for the same AUT.
 
 ## Purpose
 
-This project was created as a practical QA automation portfolio demonstrating how Playwright can be used to test a full-stack application across the **UI, API, and database layers**.
+This project was created as a practical QA automation portfolio demonstrating Playwright testing across the UI, API, database, authentication, accessibility, cross-browser, and CI layers.
 
-The framework focuses on:
-
-- Maintainable test architecture
-- Reusable components
-- Realistic validation scenarios
-- Cross-browser test configuration
-- Test independence
-- Database verification
-- Defect investigation and regression coverage
-- Failure diagnostics
-- Test reporting
-- CI/CD integration
+The focus is on maintainable automation, realistic validation scenarios, reliable test data, regression coverage, and clear failure diagnostics.
 
 The repository is publicly available for review by potential employers and recruiters.
 
