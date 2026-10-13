@@ -85,6 +85,32 @@ test("main navigation link should support focus and Enter activation", async ({
   await expect(projectPage.architectureHeading).toBeVisible();
 });
 
+test("authentication navigation link should retain accessible contrast when keyboard focused", async ({
+  page,
+}) => {
+  await page.goto("/project", { waitUntil: "load" });
+
+  const authenticationLink = page.locator('a[href="/auth/login"]');
+
+  await expect(authenticationLink).toBeVisible();
+  await expect(authenticationLink).toBeEnabled();
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (await authenticationLink.evaluate((element) =>
+      document.activeElement === element
+    )) {
+      break;
+    }
+
+    await page.keyboard.press("Tab");
+  }
+
+  await expect(authenticationLink).toBeFocused();
+  await expect(authenticationLink).toHaveCSS("color", "rgb(56, 189, 248)");
+
+  await expectNoAutomaticallyDetectableViolations(page);
+});
+
 test("contact form fields should expose accessible names and keyboard focus", async ({
   page,
 }) => {
