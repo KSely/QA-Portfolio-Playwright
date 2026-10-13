@@ -18,7 +18,8 @@ function formatAxeViolations(violations) {
       const affectedNodes = violation.nodes
         .map((node) => {
           const selectors = node.target.join(" > ");
-          const summary = node.failureSummary || "See the axe rule help for details.";
+          const summary =
+            node.failureSummary || "See the axe rule help for details.";
 
           return `    - ${selectors}\n      ${summary}`;
         })
@@ -43,8 +44,36 @@ async function expectNoAutomaticallyDetectableViolations(page) {
 
   expect(
     results.violations.length,
-    `Automatically detectable accessibility violations:\n\n${formatAxeViolations(results.violations)}`,
+    `Automatically detectable accessibility violations:\n\n${formatAxeViolations(
+      results.violations,
+    )}`,
   ).toBe(0);
+}
+
+/*
+ * Opens the responsive navigation when Bootstrap has collapsed it.
+ * On wide desktop viewports the requested link is already visible,
+ * so no action is required.
+ */
+async function ensureNavigationLinkIsVisible(page, navigationLink) {
+  if (await navigationLink.isVisible()) {
+    return;
+  }
+
+  const navigationToggle = page.getByRole("button", {
+    name: "Toggle navigation",
+  });
+
+  await expect(navigationToggle).toBeVisible();
+  await expect(navigationToggle).toBeEnabled();
+
+  await navigationToggle.focus();
+  await expect(navigationToggle).toBeFocused();
+
+  await page.keyboard.press("Enter");
+
+  await expect(navigationToggle).toHaveAttribute("aria-expanded", "true");
+  await expect(navigationLink).toBeVisible();
 }
 
 const pagesToScan = [
@@ -75,6 +104,8 @@ test("main navigation link should support focus and Enter activation", async ({
     .getByRole("navigation")
     .getByRole("link", { name: "Architecture", exact: true });
 
+  await ensureNavigationLinkIsVisible(page, architectureLink);
+
   await architectureLink.focus();
   await expect(architectureLink).toBeFocused();
   await expect(architectureLink).toBeEnabled();
@@ -90,15 +121,26 @@ test("authentication navigation link should retain accessible contrast when keyb
 }) => {
   await page.goto("/project", { waitUntil: "load" });
 
-  const authenticationLink = page.locator('a[href="/auth/login"]');
+  const authenticationLink = page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Login / Account", exact: true });
+
+  await ensureNavigationLinkIsVisible(page, authenticationLink);
 
   await expect(authenticationLink).toBeVisible();
   await expect(authenticationLink).toBeEnabled();
 
+  /*
+   * Start from the navigation toggle when the menu is collapsed and
+   * continue through the real keyboard tab order until the auth link
+   * receives focus.
+   */
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    if (await authenticationLink.evaluate((element) =>
-      document.activeElement === element
-    )) {
+    const isFocused = await authenticationLink.evaluate(
+      (element) => document.activeElement === element,
+    );
+
+    if (isFocused) {
       break;
     }
 
@@ -106,7 +148,11 @@ test("authentication navigation link should retain accessible contrast when keyb
   }
 
   await expect(authenticationLink).toBeFocused();
-  await expect(authenticationLink).toHaveCSS("color", "rgb(56, 189, 248)");
+
+  await expect(authenticationLink).toHaveCSS(
+    "color",
+    "rgb(56, 189, 248)",
+  );
 
   await expectNoAutomaticallyDetectableViolations(page);
 });
