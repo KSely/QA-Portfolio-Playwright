@@ -8,6 +8,7 @@
     "test:ui": "playwright test tests/ui",
     "test:accessibility": "playwright test --project=accessibility",
     "test:api": "playwright test tests/api",
+    "test:auth": "playwright test tests/ui/auth.spec.js tests/api/authApi.spec.js",
     "test:db": "playwright test tests/database",
     "test:smoke": "playwright test --grep @smoke"
   },

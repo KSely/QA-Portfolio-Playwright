@@ -162,3 +162,131 @@ function buildContactIdentifierClause({ email, message }) {
     values,
   };
 }
+
+
+// ============================================================
+// Authentication Test Data
+// ============================================================
+
+// Return a test user, including its password hash for focused storage checks.
+export async function getUserByEmail(email) {
+  const client = createDatabaseClient();
+  const normalizedEmail = normalizeAuthEmail(email);
+
+  try {
+    await client.connect();
+
+    const result = await client.query(
+      `
+        SELECT id, email, password_hash, role, created_at
+        FROM users
+        WHERE email = $1
+        LIMIT 1
+      `,
+      [normalizedEmail],
+    );
+
+    return result.rows[0] ?? null;
+  } finally {
+    await client.end();
+  }
+}
+
+export async function userExistsByEmail(email) {
+  return (await getUserByEmail(email)) !== null;
+}
+
+// Change only the role of the uniquely identified test-owned user.
+export async function setUserRole(email, role) {
+  const allowedRoles = new Set(["user", "admin"]);
+  const normalizedRole = typeof role === "string"
+    ? role.trim().toLowerCase()
+    : "";
+
+  if (!allowedRoles.has(normalizedRole)) {
+    throw new Error("User role must be either user or admin.");
+  }
+
+  const client = createDatabaseClient();
+  const normalizedEmail = normalizeAuthEmail(email);
+
+  try {
+    await client.connect();
+
+    const result = await client.query(
+      `
+        UPDATE users
+        SET role = $1
+        WHERE email = $2
+        RETURNING id, email, role
+      `,
+      [normalizedRole, normalizedEmail],
+    );
+
+    return result.rows[0] ?? null;
+  } finally {
+    await client.end();
+  }
+}
+
+// Delete one test-owned user and only the sessions associated with its user ID.
+export async function deleteUserByEmail(email) {
+  const client = createDatabaseClient();
+  const normalizedEmail = normalizeAuthEmail(email);
+
+  try {
+    await client.connect();
+    await client.query("BEGIN");
+
+    const userResult = await client.query(
+      `
+        SELECT id
+        FROM users
+        WHERE email = $1
+        FOR UPDATE
+      `,
+      [normalizedEmail],
+    );
+
+    if (userResult.rowCount === 0) {
+      await client.query("COMMIT");
+      return { usersDeleted: 0, sessionsDeleted: 0 };
+    }
+
+    const userId = userResult.rows[0].id;
+    const sessionResult = await client.query(
+      `
+        DELETE FROM user_sessions
+        WHERE sess->>'userId' = $1
+      `,
+      [String(userId)],
+    );
+    const deleteResult = await client.query(
+      `
+        DELETE FROM users
+        WHERE id = $1
+      `,
+      [userId],
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      usersDeleted: deleteResult.rowCount,
+      sessionsDeleted: sessionResult.rowCount,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+function normalizeAuthEmail(email) {
+  if (typeof email !== "string" || email.trim().length === 0) {
+    throw new Error("Authentication test-data operations require an email.");
+  }
+
+  return email.trim().toLowerCase();
+}
