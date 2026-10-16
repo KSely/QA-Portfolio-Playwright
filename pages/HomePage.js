@@ -9,7 +9,7 @@ export default class HomePage {
 
     // Hero section
     this.mainHeading = page.getByRole('heading', {
-      name: /Software Tester\s*\|\s*SDET/i
+      name: /Software Tester\s*\|\s*QA Automation Engineer \(SDET\)/i
     });
 
     this.viewProjectLink = page.getByRole('link', {
